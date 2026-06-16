@@ -288,6 +288,11 @@ select option{background:var(--s2)}
       <span style="flex:1">Pendentes</span>
       <span id="sb-pend-badge" style="display:none;background:var(--abg);border:1px solid var(--abr);color:var(--amber);font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:10px">0</span>
     </button>
+    <button class="ni" id="ni-pendhoje" onclick="goTo(this,'pendhoje')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><circle cx="12" cy="14" r="2.4"/></svg>
+      <span style="flex:1">Pendentes Hoje</span>
+      <span id="sb-pendhoje-badge" style="display:none;background:var(--abg);border:1px solid var(--abr);color:var(--amber);font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:10px">0</span>
+    </button>
     <button class="ni" id="ni-green" onclick="goTo(this,'green')">
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       <span style="flex:1">Green</span>
@@ -312,6 +317,10 @@ select option{background:var(--s2)}
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c2 3 3 5.5 3 9s-1 6-3 9"/><path d="M12 3c-2 3-3 5.5-3 9s1 6 3 9"/><line x1="3.5" y1="9" x2="20.5" y2="9"/><line x1="3.5" y1="15" x2="20.5" y2="15"/></svg>
       Por Esporte
     </button>
+    <button class="ni" onclick="goTo(this,'meses')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+      Meses Fechados
+    </button>
   </nav>
   <div class="sb-card">
     <div class="sc-lbl">LUCRO TOTAL</div>
@@ -327,6 +336,7 @@ select option{background:var(--s2)}
   <div class="page active" id="page-dash">
     <div class="ph">
       <div><h1>Dashboard</h1><p id="ddate"></p></div>
+      <button class="btn btn-sm" style="background:var(--s2);color:var(--t2);border:1px solid var(--b0)" onclick="openCloseMonth()">📦 Fechar Mês</button>
     </div>
     <div class="banner bpos" id="banner">
       <span class="bn-label">Lucro total:</span>
@@ -563,6 +573,43 @@ select option{background:var(--s2)}
     </div>
   </div>
 
+  <!-- PENDENTES HOJE -->
+  <div class="page" id="page-pendhoje">
+    <div class="ph">
+      <div><h1>Pendentes Hoje</h1><p id="ph-page-sub">apostas com data de hoje aguardando resultado</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+      <div class="kpi" style="border-color:var(--abr);background:var(--abg)">
+        <div class="kl" style="color:var(--amber);opacity:.7">PENDENTES HOJE</div>
+        <div class="kv a" id="ph-count" style="font-size:26px">0</div>
+      </div>
+      <div class="kpi" style="border-color:var(--abr);background:var(--abg)">
+        <div class="kl" style="color:var(--amber);opacity:.7">VALOR EM RISCO</div>
+        <div class="kv a" id="ph-stake" style="font-size:22px">R$ 0,00</div>
+      </div>
+      <div class="kpi" style="border-color:var(--abr);background:var(--abg)">
+        <div class="kl" style="color:var(--amber);opacity:.7">RETORNO POTENCIAL</div>
+        <div class="kv g" id="ph-pot" style="font-size:22px">R$ 0,00</div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--t3);margin-top:3px">se todas derem GREEN</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <span class="ct">Pendentes de Hoje</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--t3)">clique em GREEN / RED / VOID para resolver</span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Esporte</th><th>Casa</th><th>Aposta</th>
+            <th>Odd</th><th>Stake</th><th>Retorno pot.</th><th>Resolver</th>
+          </tr></thead>
+          <tbody id="ph-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- GREEN -->
   <div class="page" id="page-green">
     <div class="ph">
@@ -731,6 +778,31 @@ select option{background:var(--s2)}
     </div>
   </div>
 
+  <!-- MESES FECHADOS -->
+  <div class="page" id="page-meses">
+    <div class="ph">
+      <div><h1>Meses Fechados</h1><p id="meses-sub">histórico arquivado por mês</p></div>
+    </div>
+    <div id="meses-list"></div>
+
+    <!-- detalhe de um mês fechado -->
+    <div class="card" id="mes-detalhe" style="display:none;margin-top:16px">
+      <div class="ch">
+        <span class="ct" id="mes-detalhe-titulo">Detalhe do mês</span>
+        <button class="btn btn-sm" style="background:var(--s2);color:var(--t2);border:1px solid var(--b0)" onclick="document.getElementById('mes-detalhe').style.display='none'">✕ Fechar</button>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Esporte</th><th>Casa</th><th>Aposta</th>
+            <th>Odd</th><th>Resultado</th><th>Stake</th><th>Lucro</th>
+          </tr></thead>
+          <tbody id="mes-detalhe-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </main>
 </div>
 <div class="toast" id="toast"></div>
@@ -767,6 +839,30 @@ select option{background:var(--s2)}
     <div class="fa" style="margin-top:18px">
       <button class="btn btn-g" onclick="saveEdit()">💾 Salvar Alterações</button>
       <button class="btn btn-q" onclick="closeEdit()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FECHAR MÊS -->
+<div class="modal-overlay" id="closemonth-overlay" onclick="if(event.target===this)closeCloseMonth()">
+  <div class="modal" style="width:min(440px,92vw)">
+    <div class="modal-title">
+      <span>📦 Fechar Mês</span>
+      <button class="modal-close" onclick="closeCloseMonth()">✕ Fechar</button>
+    </div>
+    <div class="fg">
+      <label>Rótulo do arquivo</label>
+      <input type="text" id="cm-label" placeholder="ex: Junho 2026">
+    </div>
+    <div style="font-size:12px;color:var(--t3);margin-top:14px;line-height:1.6">
+      Todas as apostas <b style="color:var(--text)">resolvidas</b> (Green, Red e Void) ativas hoje serão arquivadas sob esse rótulo e o Dashboard volta a contar do zero. Apostas <b style="color:var(--amber)">pendentes</b> não são afetadas. Essa ação não apaga nada — os dados continuam acessíveis em "Meses Fechados".
+    </div>
+    <div style="font-size:13px;color:var(--text);margin-top:14px;padding:10px 12px;background:var(--s2);border:1px solid var(--b0);border-radius:8px" id="cm-preview">
+      Calculando...
+    </div>
+    <div class="fa" style="margin-top:18px">
+      <button class="btn btn-g" onclick="confirmCloseMonth()">✓ Confirmar e Arquivar</button>
+      <button class="btn btn-q" onclick="closeCloseMonth()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -852,7 +948,7 @@ function goTo(btn,p){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('on');
-  ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,green:rGreenPage,red:rRedPage,void:rVoidPage})[p]?.();
+  ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,pendhoje:rPendHojePage,green:rGreenPage,red:rRedPage,void:rVoidPage,meses:rMeses})[p]?.();
 }
 
 function styleRes(s){
@@ -862,17 +958,23 @@ function styleRes(s){
 
 // ── stats ──────────────────────────────────────────────────────────
 function stats(){
-  const g=bets.filter(b=>b.res==='GREEN');
-  const r=bets.filter(b=>b.res==='RED');
-  const v=bets.filter(b=>b.res==='VOID');
-  const pend=bets.filter(b=>!b.res||b.res==='PENDENTE');
-  const res=bets.filter(b=>b.res&&b.res!=='PENDENTE');
+  const ab=activeBets();
+  const g=ab.filter(b=>b.res==='GREEN');
+  const r=ab.filter(b=>b.res==='RED');
+  const v=ab.filter(b=>b.res==='VOID');
+  const pend=ab.filter(b=>!b.res||b.res==='PENDENTE');
+  const res=ab.filter(b=>b.res&&b.res!=='PENDENTE');
   const tl=res.reduce((s,b)=>s+(luc(b)||0),0);
-  const ts=bets.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+  const ts=ab.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   const pendStake=pend.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   const roi=ts>0?tl/ts*100:0;
   const ac=(g.length+r.length)>0?g.length/(g.length+r.length)*100:0;
   return{g,r,v,pend,res,tl,ts,pendStake,roi,ac};
+}
+
+// apostas não arquivadas — usadas pelo Dashboard, Histórico, Por Casa, Por Esporte, Green/Red/Void/Pendentes
+function activeBets(){
+  return bets.filter(b=>!b.arquivo);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -895,7 +997,7 @@ function startListeners(){
       // re-render página ativa
       const active=document.querySelector('.page.active')?.id?.replace('page-','');
       if(active){
-        ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,green:rGreenPage,red:rRedPage,void:rVoidPage})[active]?.();
+        ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,pendhoje:rPendHojePage,green:rGreenPage,red:rRedPage,void:rVoidPage,meses:rMeses})[active]?.();
       } else { rDash(); }
     }, err=>{ console.error('Bets listener error:',err); toast('⚠ Erro de sincronização'); });
 
@@ -941,6 +1043,16 @@ async function fbDeleteAllBets(){
   await batch.commit();
 }
 
+// arquiva todas as apostas RESOLVIDAS (Green/Red/Void) ainda ativas, gravando o rótulo do mês
+async function fbArchiveBets(label){
+  const toArchive = activeBets().filter(b=>b.res==='GREEN'||b.res==='RED'||b.res==='VOID');
+  if(!toArchive.length) return 0;
+  const batch = db.batch();
+  toArchive.forEach(b=>batch.update(betsCol().doc(b.id),{arquivo:label}));
+  await batch.commit();
+  return toArchive.length;
+}
+
 async function fbSaveCasas(list){
   casas = list;
   try{
@@ -955,21 +1067,22 @@ function rDash(){
   document.getElementById('ddate').textContent=
     new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
+  const ab=activeBets();
   const{g,r,v,pend,res,tl,ts,pendStake,roi,ac}=stats();
   const pos=tl>=0;
 
   const ban=document.getElementById('banner');
   ban.className='banner '+(pos?'bpos':'bneg');
   document.getElementById('bval').textContent=fmtR(tl);
-  document.getElementById('bsub').textContent=`${bets.length} apostas · ROI ${roi.toFixed(1)}%${pend.length?' · '+pend.length+' pendentes':''}`;
+  document.getElementById('bsub').textContent=`${ab.length} apostas · ROI ${roi.toFixed(1)}%${pend.length?' · '+pend.length+' pendentes':''}`;
 
   document.getElementById('sb-v').textContent=fmtR(tl);
   document.getElementById('sb-v').style.color=pos?'var(--green2)':'var(--red)';
-  document.getElementById('sb-s').textContent=bets.length+' apostas registradas';
+  document.getElementById('sb-s').textContent=ab.length+' apostas registradas';
 
   document.getElementById('krow').innerHTML=[
     {l:'TOTAL APOSTADO',v:fmtR(ts),c:'',sub:''},
-    {l:'APOSTAS',v:bets.length,c:'b',sub:res.length+' resolvidas'},
+    {l:'APOSTAS',v:ab.length,c:'b',sub:res.length+' resolvidas'},
     {l:'GREEN',v:g.length,c:'g',sub:'',link:"goTo(document.getElementById('ni-green'),'green')"},
     {l:'RED',v:r.length,c:'r',sub:'',link:"goTo(document.getElementById('ni-red'),'red')"},
     {l:'VOID',v:v.length,c:'b',sub:'',link:"goTo(document.getElementById('ni-void'),'void')"},
@@ -992,7 +1105,7 @@ function rDash(){
   tl_el.style.color=pos?'var(--green2)':'var(--red)';
 
   const cm={};
-  bets.forEach(b=>{const c=b.casa||'?';cm[c]=cm[c]||{n:0,l:0};cm[c].n++;cm[c].l+=luc(b)||0;});
+  ab.forEach(b=>{const c=b.casa||'?';cm[c]=cm[c]||{n:0,l:0};cm[c].n++;cm[c].l+=luc(b)||0;});
   const cr=Object.entries(cm).sort((a,b)=>b[1].l-a[1].l).slice(0,10);
   document.getElementById('d-casas').innerHTML=cr.length
     ?cr.map(([c,d])=>`<tr><td style="font-weight:500">${c}</td><td class="mono">${d.n}</td><td class="${d.l>=0?'cG':'cR'}">${fmtR(d.l)}</td></tr>`).join('')
@@ -1000,14 +1113,14 @@ function rDash(){
 
   const SPORTS=['Futebol','Basquete','Tênis','MMA','Vôlei','E-sports','Outros'];
   const em={};
-  SPORTS.forEach(s=>{const sub=bets.filter(b=>b.esp===s);if(sub.length)em[s]={n:sub.length,l:sub.reduce((a,b)=>a+(luc(b)||0),0)};});
+  SPORTS.forEach(s=>{const sub=ab.filter(b=>b.esp===s);if(sub.length)em[s]={n:sub.length,l:sub.reduce((a,b)=>a+(luc(b)||0),0)};});
   const er=Object.entries(em);
-  const totalRow=er.length?`<tr style="border-top:2px solid var(--b1)"><td style="font-weight:700;color:var(--t2)">TOTAL</td><td class="mono" style="font-weight:700">${bets.length}</td><td class="${tl>=0?'cG':'cR'}" style="font-weight:700">${fmtR(tl)}</td></tr>`:'';
+  const totalRow=er.length?`<tr style="border-top:2px solid var(--b1)"><td style="font-weight:700;color:var(--t2)">TOTAL</td><td class="mono" style="font-weight:700">${ab.length}</td><td class="${tl>=0?'cG':'cR'}" style="font-weight:700">${fmtR(tl)}</td></tr>`:'';
   document.getElementById('d-esps').innerHTML=er.length
     ?er.map(([s,d])=>`<tr><td>${s}</td><td class="mono">${d.n}</td><td class="${d.l>=0?'cG':'cR'}">${fmtR(d.l)}</td></tr>`).join('')+totalRow
     :'<tr><td colspan="3" class="empty">Sem dados</td></tr>';
 
-  const last=[...bets].reverse().slice(0,12);
+  const last=[...ab].reverse().slice(0,12);
   document.getElementById('d-ult').innerHTML=last.length
     ?last.map(b=>{const l=luc(b);return`<tr>
       <td class="mono" style="font-size:11px">${fd(b.dat)}</td>
@@ -1023,12 +1136,17 @@ function rDash(){
   const _pb=document.getElementById('sb-pend-badge');
   if(_pb){if(pend.length>0){_pb.textContent=pend.length;_pb.style.display='inline';}else _pb.style.display='none';}
 
-  buildCharts(res,g,r,v);
+  const hoje=new Date().toISOString().split('T')[0];
+  const pendHojeCnt=ab.filter(b=>(!b.res||b.res==='PENDENTE')&&b.dat===hoje).length;
+  const _phb=document.getElementById('sb-pendhoje-badge');
+  if(_phb){if(pendHojeCnt>0){_phb.textContent=pendHojeCnt;_phb.style.display='inline';}else _phb.style.display='none';}
+
+  buildCharts(res,g,r,v,pend);
   buildMensalChart();
   rHeatmap();
 }
 
-function buildCharts(res,g,r,v){
+function buildCharts(res,g,r,v,pend){
   let acc=0;
   const lv=res.map(b=>{acc+=luc(b)||0;return+acc.toFixed(2)});
   const lc=acc>=0?'#00f590':'#ff4d6a';
@@ -1042,7 +1160,7 @@ function buildCharts(res,g,r,v){
   });
 
   if(cD)cD.destroy();
-  const pendCnt=bets.filter(b=>!b.res||b.res==='PENDENTE').length;
+  const pendCnt=pend?pend.length:0;
   cD=new Chart(document.getElementById('cDonut'),{
     type:'doughnut',
     data:{labels:['Green','Red','Void','Pendente'],datasets:[{data:[g.length,r.length,v.length,pendCnt],backgroundColor:['#00d97e','#ff4d6a','#38c9ff','#ffc94d'],borderWidth:0,hoverOffset:6}]},
@@ -1059,7 +1177,7 @@ function buildMensalChart(){
   const ano=new Date().getFullYear();
   document.getElementById('mensal-ano').textContent=ano;
   const vals=MESES.map((_,i)=>{
-    const sub=bets.filter(b=>{
+    const sub=activeBets().filter(b=>{
       if(!b.dat||!b.res||b.res==='PENDENTE')return false;
       const d=new Date(b.dat+'T12:00:00');
       return d.getFullYear()===ano&&d.getMonth()===i;
@@ -1088,7 +1206,7 @@ function rHeatmap(){
   const DAYS=['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
   const dayIdx=d=>{const v=new Date(d+'T12:00:00').getDay();return v===0?6:v-1;};
   const dm=Array.from({length:7},()=>({n:0,g:0,r:0,v:0,stake:0,lucro:0}));
-  bets.forEach(b=>{
+  activeBets().forEach(b=>{
     if(!b.dat||!b.res||b.res==='PENDENTE')return;
     const i=dayIdx(b.dat);
     if(i<0||i>6)return;
@@ -1278,7 +1396,7 @@ function clrForm(){
 }
 
 function rPend(){
-  const pend=bets.filter(b=>!b.res||b.res==='PENDENTE');
+  const pend=activeBets().filter(b=>!b.res||b.res==='PENDENTE');
   document.getElementById('ps').style.display=pend.length?'block':'none';
   document.getElementById('pend-count').textContent=pend.length;
   document.getElementById('ptb').innerHTML=pend.map(b=>`<tr>
@@ -1299,7 +1417,7 @@ function rPend(){
 // PÁGINA PENDENTES
 // ══════════════════════════════════════════════════════════════════
 function rPendPage(){
-  const pend=bets.filter(b=>!b.res||b.res==='PENDENTE');
+  const pend=activeBets().filter(b=>!b.res||b.res==='PENDENTE');
   const stake=pend.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   const pot=pend.reduce((s,b)=>s+parseFloat(b.stake||0)*(parseFloat(b.odd||1)-1),0);
   document.getElementById('pp-count').textContent=pend.length;
@@ -1333,6 +1451,40 @@ async function resolvePage(id,r){
   toast('✓ Marcado como '+r+'!');
 }
 
+// ══════════════════════════════════════════════════════════════════
+// PÁGINA PENDENTES HOJE
+// ══════════════════════════════════════════════════════════════════
+function rPendHojePage(){
+  const hoje=new Date().toISOString().split('T')[0];
+  const pend=activeBets().filter(b=>(!b.res||b.res==='PENDENTE')&&b.dat===hoje);
+  const stake=pend.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+  const pot=pend.reduce((s,b)=>s+parseFloat(b.stake||0)*(parseFloat(b.odd||1)-1),0);
+  document.getElementById('ph-count').textContent=pend.length;
+  document.getElementById('ph-stake').textContent=fmtR(stake);
+  document.getElementById('ph-pot').textContent=fmtR(pot);
+  document.getElementById('ph-page-sub').textContent=pend.length+' aposta'+(pend.length!==1?'s':'')+' de hoje aguardando resultado';
+  const badge=document.getElementById('sb-pendhoje-badge');
+  if(badge){if(pend.length>0){badge.textContent=pend.length;badge.style.display='inline';}else badge.style.display='none';}
+  document.getElementById('ph-tbody').innerHTML=pend.length
+    ?[...pend].reverse().map(b=>{
+      const pot=parseFloat(b.stake||0)*(parseFloat(b.odd||1)-1);
+      return`<tr>
+        <td class="mono" style="font-size:11px">${fd(b.dat)}</td>
+        <td>${b.esp||'—'}</td><td>${b.casa||'—'}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${b.ap||'—'}</td>
+        <td class="mono">${parseFloat(b.odd||0).toFixed(2)}</td>
+        <td class="mono">${fmtR(b.stake)}</td>
+        <td class="mono" style="color:var(--green2)">${fmtR(pot)}</td>
+        <td style="display:flex;gap:5px;align-items:center;padding:7px 12px">
+          <button class="btn btn-sm" style="background:var(--gbg);color:var(--green2);border:1px solid var(--gbr);font-weight:700" onclick="resolvePage('${b.id}','GREEN')">GREEN</button>
+          <button class="btn btn-sm" style="background:var(--rbg);color:var(--red);border:1px solid var(--rbr);font-weight:700" onclick="resolvePage('${b.id}','RED')">RED</button>
+          <button class="btn btn-sm" style="background:var(--bbg);color:var(--blue);border:1px solid var(--bbr);font-weight:700" onclick="resolvePage('${b.id}','VOID')">VOID</button>
+        </td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="8" class="empty">Nenhuma pendente para hoje 🎉</td></tr>`;
+}
+
 async function resolveB(id,r){
   await fbUpdateBet(id,{res:r});
   toast('✓ Marcado como '+r+'!');
@@ -1343,7 +1495,7 @@ async function resolveB(id,r){
 // PÁGINA GREEN
 // ══════════════════════════════════════════════════════════════════
 function rGreenPage(){
-  const list=bets.filter(b=>b.res==='GREEN');
+  const list=activeBets().filter(b=>b.res==='GREEN');
   const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   const lucro=list.reduce((s,b)=>s+(luc(b)||0),0);
   document.getElementById('gp-count').textContent=list.length;
@@ -1373,7 +1525,7 @@ function rGreenPage(){
 // PÁGINA RED
 // ══════════════════════════════════════════════════════════════════
 function rRedPage(){
-  const list=bets.filter(b=>b.res==='RED');
+  const list=activeBets().filter(b=>b.res==='RED');
   const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   const lucro=list.reduce((s,b)=>s+(luc(b)||0),0);
   document.getElementById('rp-count').textContent=list.length;
@@ -1403,7 +1555,7 @@ function rRedPage(){
 // PÁGINA VOID
 // ══════════════════════════════════════════════════════════════════
 function rVoidPage(){
-  const list=bets.filter(b=>b.res==='VOID');
+  const list=activeBets().filter(b=>b.res==='VOID');
   const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   document.getElementById('vp-count').textContent=list.length;
   document.getElementById('vp-stake').textContent=fmtR(stake);
@@ -1433,7 +1585,7 @@ function renderHist(){
   const f1=document.getElementById('hfilt').value;
   const f2=document.getElementById('hfilt2').value;
   const q=(document.getElementById('hsearch')?.value||'').toLowerCase().trim();
-  const data=[...bets].filter(b=>{
+  const data=[...activeBets()].filter(b=>{
     if(f1&&b.esp!==f1)return false;
     if(f2&&b.res!==f2)return false;
     if(q&&!((b.ap||'').toLowerCase().includes(q)||(b.casa||'').toLowerCase().includes(q)||(b.esp||'').toLowerCase().includes(q)))return false;
@@ -1475,7 +1627,7 @@ async function clrAll(){
 // ══════════════════════════════════════════════════════════════════
 function rCasas(){
   const m={};
-  bets.forEach(b=>{
+  activeBets().forEach(b=>{
     const c=b.casa||'?';
     m[c]=m[c]||{n:0,g:0,r:0,v:0,s:0,l:0};
     m[c].n++;m[c].s+=parseFloat(b.stake||0);
@@ -1509,7 +1661,7 @@ function rCasas(){
 function rEsp(){
   const SPORTS=['Futebol','Basquete','Tênis','MMA','Vôlei','E-sports','Outros'];
   const m={};
-  bets.forEach(b=>{
+  activeBets().forEach(b=>{
     const s=b.esp||'Outros';
     m[s]=m[s]||{n:0,g:0,r:0,v:0,s:0,l:0};
     m[s].n++;m[s].s+=parseFloat(b.stake||0);
@@ -1547,6 +1699,89 @@ function rEsp(){
       scales:{x:{grid:{display:false},border:{color:'#272d40'},ticks:{color:'#8892a8',font:{size:11,family:'Outfit'}}},
         y:{grid:{color:'#191d28'},border:{color:'#272d40'},ticks:{color:'#4a5068',font:{size:10,family:'JetBrains Mono'},callback:v=>fmtR(v)}}}}
   });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FECHAR MÊS — arquivamento manual
+// ══════════════════════════════════════════════════════════════════
+function openCloseMonth(){
+  const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const now=new Date();
+  document.getElementById('cm-label').value=MESES[now.getMonth()]+' '+now.getFullYear();
+  const toArchive=activeBets().filter(b=>b.res==='GREEN'||b.res==='RED'||b.res==='VOID');
+  const lucro=toArchive.reduce((s,b)=>s+(luc(b)||0),0);
+  document.getElementById('cm-preview').innerHTML=toArchive.length
+    ? `${toArchive.length} aposta${toArchive.length!==1?'s':''} resolvida${toArchive.length!==1?'s':''} será${toArchive.length!==1?'ão':''} arquivada${toArchive.length!==1?'s':''} · Lucro do período: <b style="color:${lucro>=0?'var(--green2)':'var(--red)'}">${fmtR(lucro)}</b>`
+    : 'Nenhuma aposta resolvida para arquivar ainda.';
+  document.getElementById('closemonth-overlay').classList.add('open');
+}
+
+function closeCloseMonth(){
+  document.getElementById('closemonth-overlay').classList.remove('open');
+}
+
+async function confirmCloseMonth(){
+  const label=document.getElementById('cm-label').value.trim();
+  if(!label){toast('⚠ Dê um nome para esse arquivo');return;}
+  const toArchive=activeBets().filter(b=>b.res==='GREEN'||b.res==='RED'||b.res==='VOID');
+  if(!toArchive.length){toast('⚠ Nada para arquivar');closeCloseMonth();return;}
+  try{
+    const n=await fbArchiveBets(label);
+    closeCloseMonth();
+    toast('✓ '+n+' apostas arquivadas em "'+label+'"!');
+    rDash();
+  }catch(e){toast('⚠ Erro ao arquivar: '+e.message);}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MESES FECHADOS
+// ══════════════════════════════════════════════════════════════════
+function rMeses(){
+  const archived=bets.filter(b=>b.arquivo);
+  const groups={};
+  archived.forEach(b=>{
+    groups[b.arquivo]=groups[b.arquivo]||[];
+    groups[b.arquivo].push(b);
+  });
+  const labels=Object.keys(groups);
+  document.getElementById('meses-sub').textContent=labels.length+' mês'.replace('mês',labels.length!==1?'meses':'mês')+' arquivado'+(labels.length!==1?'s':'');
+  document.getElementById('meses-list').innerHTML=labels.length
+    ? `<div class="g3">`+labels.map(label=>{
+        const list=groups[label];
+        const lucro=list.reduce((s,b)=>s+(luc(b)||0),0);
+        const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+        const g=list.filter(b=>b.res==='GREEN').length;
+        const r=list.filter(b=>b.res==='RED').length;
+        const roi=stake>0?(lucro/stake*100):0;
+        return`<div class="card" style="cursor:pointer" onclick="rMesDetalhe('${label.replace(/'/g,"\\'")}')">
+          <div class="ch"><span class="ct">${label}</span><span class="badge ${lucro>=0?'bG':'bR'}">${fmtR(lucro)}</span></div>
+          <div class="card-p" style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>Apostas</span><span class="mono">${list.length}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>Green / Red</span><span class="mono"><span style="color:var(--green2)">${g}</span> / <span style="color:var(--red)">${r}</span></span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>Stake total</span><span class="mono">${fmtR(stake)}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>ROI</span><span class="mono" style="color:${roi>=0?'var(--green2)':'var(--red)'}">${roi.toFixed(1)}%</span></div>
+          </div>
+        </div>`;
+      }).join('')+`</div>`
+    : '<div class="card"><div class="card-p"><div class="empty">Nenhum mês arquivado ainda — use o botão "Fechar Mês" no Dashboard</div></div></div>';
+}
+
+function rMesDetalhe(label){
+  const list=bets.filter(b=>b.arquivo===label).slice().reverse();
+  document.getElementById('mes-detalhe-titulo').textContent=label+' — '+list.length+' apostas';
+  document.getElementById('mes-detalhe-tbody').innerHTML=list.length
+    ?list.map(b=>{const l=luc(b);return`<tr>
+      <td class="mono" style="font-size:11px">${fd(b.dat)}</td>
+      <td>${b.esp||'—'}</td><td>${b.casa||'—'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${b.ap||'—'}</td>
+      <td class="mono">${parseFloat(b.odd||0).toFixed(2)}</td>
+      <td>${bdg(b.res)}</td>
+      <td class="mono">${fmtR(b.stake)}</td>
+      ${lCell(l)}
+    </tr>`}).join('')
+    :'<tr><td colspan="8" class="empty">Sem dados</td></tr>';
+  document.getElementById('mes-detalhe').style.display='block';
+  document.getElementById('mes-detalhe').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 // ══════════════════════════════════════════════════════════════════
