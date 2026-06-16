@@ -288,6 +288,21 @@ select option{background:var(--s2)}
       <span style="flex:1">Pendentes</span>
       <span id="sb-pend-badge" style="display:none;background:var(--abg);border:1px solid var(--abr);color:var(--amber);font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:10px">0</span>
     </button>
+    <button class="ni" id="ni-green" onclick="goTo(this,'green')">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      <span style="flex:1">Green</span>
+      <span id="sb-green-badge" style="display:none;background:var(--gbg);border:1px solid var(--gbr);color:var(--green2);font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:10px">0</span>
+    </button>
+    <button class="ni" id="ni-red" onclick="goTo(this,'red')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <span style="flex:1">Red</span>
+      <span id="sb-red-badge" style="display:none;background:var(--rbg);border:1px solid var(--rbr);color:var(--red);font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:10px">0</span>
+    </button>
+    <button class="ni" id="ni-void" onclick="goTo(this,'void')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="7" y1="7" x2="17" y2="17" stroke-dasharray="2 2"/></svg>
+      <span style="flex:1">Void</span>
+      <span id="sb-void-badge" style="display:none;background:var(--bbg);border:1px solid var(--bbr);color:var(--blue);font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:10px">0</span>
+    </button>
     <div class="nav-sec">Análise</div>
     <button class="ni" onclick="goTo(this,'casas')">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -548,6 +563,110 @@ select option{background:var(--s2)}
     </div>
   </div>
 
+  <!-- GREEN -->
+  <div class="page" id="page-green">
+    <div class="ph">
+      <div><h1>Apostas Green</h1><p id="green-page-sub">vencedoras</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+      <div class="kpi" style="border-color:var(--gbr);background:var(--gbg)">
+        <div class="kl" style="color:var(--green2);opacity:.7">QTD. GREEN</div>
+        <div class="kv g" id="gp-count" style="font-size:26px">0</div>
+      </div>
+      <div class="kpi" style="border-color:var(--gbr);background:var(--gbg)">
+        <div class="kl" style="color:var(--green2);opacity:.7">STAKE TOTAL</div>
+        <div class="kv g" id="gp-stake" style="font-size:22px">R$ 0,00</div>
+      </div>
+      <div class="kpi" style="border-color:var(--gbr);background:var(--gbg)">
+        <div class="kl" style="color:var(--green2);opacity:.7">LUCRO TOTAL</div>
+        <div class="kv g" id="gp-lucro" style="font-size:22px">R$ 0,00</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <span class="ct">Green</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--t3)" id="gp-hint"></span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Esporte</th><th>Casa</th><th>Aposta</th>
+            <th>Odd</th><th>Stake</th><th>Lucro</th><th>Editar</th>
+          </tr></thead>
+          <tbody id="gp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RED -->
+  <div class="page" id="page-red">
+    <div class="ph">
+      <div><h1>Apostas Red</h1><p id="red-page-sub">perdedoras</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+      <div class="kpi" style="border-color:var(--rbr);background:var(--rbg)">
+        <div class="kl" style="color:var(--red);opacity:.7">QTD. RED</div>
+        <div class="kv r" id="rp-count" style="font-size:26px">0</div>
+      </div>
+      <div class="kpi" style="border-color:var(--rbr);background:var(--rbg)">
+        <div class="kl" style="color:var(--red);opacity:.7">STAKE TOTAL</div>
+        <div class="kv r" id="rp-stake" style="font-size:22px">R$ 0,00</div>
+      </div>
+      <div class="kpi" style="border-color:var(--rbr);background:var(--rbg)">
+        <div class="kl" style="color:var(--red);opacity:.7">PREJUÍZO TOTAL</div>
+        <div class="kv r" id="rp-lucro" style="font-size:22px">R$ 0,00</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <span class="ct">Red</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--t3)" id="rp-hint"></span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Esporte</th><th>Casa</th><th>Aposta</th>
+            <th>Odd</th><th>Stake</th><th>Prejuízo</th><th>Editar</th>
+          </tr></thead>
+          <tbody id="rp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOID -->
+  <div class="page" id="page-void">
+    <div class="ph">
+      <div><h1>Apostas Void</h1><p id="void-page-sub">anuladas</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px">
+      <div class="kpi" style="border-color:var(--bbr);background:var(--bbg)">
+        <div class="kl" style="color:var(--blue);opacity:.7">QTD. VOID</div>
+        <div class="kv b" id="vp-count" style="font-size:26px">0</div>
+      </div>
+      <div class="kpi" style="border-color:var(--bbr);background:var(--bbg)">
+        <div class="kl" style="color:var(--blue);opacity:.7">STAKE DEVOLVIDO</div>
+        <div class="kv b" id="vp-stake" style="font-size:22px">R$ 0,00</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <span class="ct">Void</span>
+        <span style="font-size:11px;font-family:var(--mono);color:var(--t3)" id="vp-hint"></span>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Data</th><th>Esporte</th><th>Casa</th><th>Aposta</th>
+            <th>Odd</th><th>Stake</th><th>Resultado</th><th>Editar</th>
+          </tr></thead>
+          <tbody id="vp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- HISTÓRICO -->
   <div class="page" id="page-hist">
     <div class="ph">
@@ -733,7 +852,7 @@ function goTo(btn,p){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('on');
-  ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage})[p]?.();
+  ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,green:rGreenPage,red:rRedPage,void:rVoidPage})[p]?.();
 }
 
 function styleRes(s){
@@ -776,7 +895,7 @@ function startListeners(){
       // re-render página ativa
       const active=document.querySelector('.page.active')?.id?.replace('page-','');
       if(active){
-        ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage})[active]?.();
+        ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,green:rGreenPage,red:rRedPage,void:rVoidPage})[active]?.();
       } else { rDash(); }
     }, err=>{ console.error('Bets listener error:',err); toast('⚠ Erro de sincronização'); });
 
@@ -1217,6 +1336,93 @@ async function resolveB(id,r){
   await fbUpdateBet(id,{res:r});
   toast('✓ Marcado como '+r+'!');
   rPend();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PÁGINA GREEN
+// ══════════════════════════════════════════════════════════════════
+function rGreenPage(){
+  const list=bets.filter(b=>b.res==='GREEN');
+  const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+  const lucro=list.reduce((s,b)=>s+(luc(b)||0),0);
+  document.getElementById('gp-count').textContent=list.length;
+  document.getElementById('gp-stake').textContent=fmtR(stake);
+  document.getElementById('gp-lucro').textContent=fmtR(lucro);
+  document.getElementById('green-page-sub').textContent=list.length+' aposta'+(list.length!==1?'s':'')+' vencedora'+(list.length!==1?'s':'');
+  document.getElementById('gp-hint').textContent=list.length+' no total';
+  const badge=document.getElementById('sb-green-badge');
+  if(badge){if(list.length>0){badge.textContent=list.length;badge.style.display='inline';}else badge.style.display='none';}
+  document.getElementById('gp-tbody').innerHTML=list.length
+    ?[...list].reverse().map(b=>{
+      const l=luc(b);
+      return`<tr>
+        <td class="mono" style="font-size:11px">${fd(b.dat)}</td>
+        <td>${b.esp||'—'}</td><td>${b.casa||'—'}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${b.ap||'—'}</td>
+        <td class="mono">${parseFloat(b.odd||0).toFixed(2)}</td>
+        <td class="mono">${fmtR(b.stake)}</td>
+        <td class="cG">${fmtR(l)}</td>
+        <td><button class="btn btn-sm" style="background:var(--s3);color:var(--t2);border:1px solid var(--b0)" onclick="openEdit('${b.id}')" title="Editar">✏️</button></td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="8" class="empty">Nenhuma aposta green ainda</td></tr>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PÁGINA RED
+// ══════════════════════════════════════════════════════════════════
+function rRedPage(){
+  const list=bets.filter(b=>b.res==='RED');
+  const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+  const lucro=list.reduce((s,b)=>s+(luc(b)||0),0);
+  document.getElementById('rp-count').textContent=list.length;
+  document.getElementById('rp-stake').textContent=fmtR(stake);
+  document.getElementById('rp-lucro').textContent=fmtR(lucro);
+  document.getElementById('red-page-sub').textContent=list.length+' aposta'+(list.length!==1?'s':'')+' perdedora'+(list.length!==1?'s':'');
+  document.getElementById('rp-hint').textContent=list.length+' no total';
+  const badge=document.getElementById('sb-red-badge');
+  if(badge){if(list.length>0){badge.textContent=list.length;badge.style.display='inline';}else badge.style.display='none';}
+  document.getElementById('rp-tbody').innerHTML=list.length
+    ?[...list].reverse().map(b=>{
+      const l=luc(b);
+      return`<tr>
+        <td class="mono" style="font-size:11px">${fd(b.dat)}</td>
+        <td>${b.esp||'—'}</td><td>${b.casa||'—'}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${b.ap||'—'}</td>
+        <td class="mono">${parseFloat(b.odd||0).toFixed(2)}</td>
+        <td class="mono">${fmtR(b.stake)}</td>
+        <td class="cR">${fmtR(l)}</td>
+        <td><button class="btn btn-sm" style="background:var(--s3);color:var(--t2);border:1px solid var(--b0)" onclick="openEdit('${b.id}')" title="Editar">✏️</button></td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="8" class="empty">Nenhuma aposta red ainda</td></tr>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PÁGINA VOID
+// ══════════════════════════════════════════════════════════════════
+function rVoidPage(){
+  const list=bets.filter(b=>b.res==='VOID');
+  const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+  document.getElementById('vp-count').textContent=list.length;
+  document.getElementById('vp-stake').textContent=fmtR(stake);
+  document.getElementById('void-page-sub').textContent=list.length+' aposta'+(list.length!==1?'s':'')+' anulada'+(list.length!==1?'s':'');
+  document.getElementById('vp-hint').textContent=list.length+' no total';
+  const badge=document.getElementById('sb-void-badge');
+  if(badge){if(list.length>0){badge.textContent=list.length;badge.style.display='inline';}else badge.style.display='none';}
+  document.getElementById('vp-tbody').innerHTML=list.length
+    ?[...list].reverse().map(b=>{
+      return`<tr>
+        <td class="mono" style="font-size:11px">${fd(b.dat)}</td>
+        <td>${b.esp||'—'}</td><td>${b.casa||'—'}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${b.ap||'—'}</td>
+        <td class="mono">${parseFloat(b.odd||0).toFixed(2)}</td>
+        <td class="mono">${fmtR(b.stake)}</td>
+        <td class="cV">R$ 0,00</td>
+        <td><button class="btn btn-sm" style="background:var(--s3);color:var(--t2);border:1px solid var(--b0)" onclick="openEdit('${b.id}')" title="Editar">✏️</button></td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="8" class="empty">Nenhuma aposta void ainda</td></tr>`;
 }
 
 // ══════════════════════════════════════════════════════════════════
