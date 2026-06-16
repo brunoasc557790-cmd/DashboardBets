@@ -970,14 +970,15 @@ function rDash(){
   document.getElementById('krow').innerHTML=[
     {l:'TOTAL APOSTADO',v:fmtR(ts),c:'',sub:''},
     {l:'APOSTAS',v:bets.length,c:'b',sub:res.length+' resolvidas'},
-    {l:'GREEN',v:g.length,c:'g',sub:''},
-    {l:'RED',v:r.length,c:'r',sub:''},
-    {l:'VOID',v:v.length,c:'b',sub:''},
+    {l:'GREEN',v:g.length,c:'g',sub:'',link:"goTo(document.getElementById('ni-green'),'green')"},
+    {l:'RED',v:r.length,c:'r',sub:'',link:"goTo(document.getElementById('ni-red'),'red')"},
+    {l:'VOID',v:v.length,c:'b',sub:'',link:"goTo(document.getElementById('ni-void'),'void')"},
     {l:'PENDENTES',v:pend.length,c:'a',sub:fmtR(pendStake)+' em risco',link:"goTo(document.getElementById('ni-pend'),'pend')"},
     {l:'ACERTO',v:ac.toFixed(1)+'%',c:ac>=50?'g':'r',sub:''},
     {l:'ROI',v:roi.toFixed(1)+'%',c:roi>=0?'g':'r',sub:''},
   ].map(k=>{
-    const click=k.link?` onclick="${k.link}" style="cursor:pointer;border-color:var(--b0)" onmouseenter="this.style.borderColor='var(--abr)'" onmouseleave="this.style.borderColor='var(--b0)'"` : '';
+    const hoverColor={g:'var(--gbr)',r:'var(--rbr)',b:'var(--bbr)',a:'var(--abr)'}[k.c]||'var(--b1)';
+    const click=k.link?` onclick="${k.link}" style="cursor:pointer;border-color:var(--b0)" onmouseenter="this.style.borderColor='${hoverColor}'" onmouseleave="this.style.borderColor='var(--b0)'"` : '';
     const sub=k.sub?`<div style="font-size:10px;font-family:var(--mono);color:var(--t3);margin-top:3px">${k.sub}</div>`:'';
     const arrow=k.link?`<div style="font-size:10px;font-family:var(--mono);color:var(--amber);margin-top:4px;opacity:.7">→ ver</div>`:'';
     return`<div class="kpi"${click}><div class="kl">${k.l}</div><div class="kv ${k.c}">${k.v}</div>${sub}${arrow}</div>`;
