@@ -317,6 +317,10 @@ select option{background:var(--s2)}
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c2 3 3 5.5 3 9s-1 6-3 9"/><path d="M12 3c-2 3-3 5.5-3 9s1 6 3 9"/><line x1="3.5" y1="9" x2="20.5" y2="9"/><line x1="3.5" y1="15" x2="20.5" y2="15"/></svg>
       Por Esporte
     </button>
+    <button class="ni" onclick="goTo(this,'diario')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><path d="M8 13l2 2 4-4"/></svg>
+      Resumo Diário
+    </button>
     <button class="ni" onclick="goTo(this,'meses')">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
       Meses Fechados
@@ -778,6 +782,31 @@ select option{background:var(--s2)}
     </div>
   </div>
 
+  <!-- RESUMO DIÁRIO -->
+  <div class="page" id="page-diario">
+    <div class="ph">
+      <div><h1>Resumo Diário</h1><p id="diario-sub">como foi cada dia</p></div>
+    </div>
+    <div id="diario-list"></div>
+
+    <!-- detalhe de um dia -->
+    <div class="card" id="dia-detalhe" style="display:none;margin-top:16px">
+      <div class="ch">
+        <span class="ct" id="dia-detalhe-titulo">Detalhe do dia</span>
+        <button class="btn btn-sm" style="background:var(--s2);color:var(--t2);border:1px solid var(--b0)" onclick="document.getElementById('dia-detalhe').style.display='none'">✕ Fechar</button>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>Esporte</th><th>Casa</th><th>Aposta</th>
+            <th>Odd</th><th>Resultado</th><th>Stake</th><th>Lucro</th>
+          </tr></thead>
+          <tbody id="dia-detalhe-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- MESES FECHADOS -->
   <div class="page" id="page-meses">
     <div class="ph">
@@ -918,6 +947,16 @@ function setLoadingMsg(m){const el=document.getElementById('app-loading-msg');if
 // showUidBadge removido — substituído por showUserBadge com Google
 
 // ── formato ────────────────────────────────────────────────────────
+// retorna a data de hoje no formato YYYY-MM-DD usando o fuso horário LOCAL do navegador
+// (evita o bug do toISOString(), que usa UTC e "vira o dia" antes da hora certa)
+function hojeLocal(){
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 function fmtR(v){
   const abs=Math.abs(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   return (v<0?'-':'')+'R$ '+abs;
@@ -948,7 +987,7 @@ function goTo(btn,p){
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('active');
   btn.classList.add('on');
-  ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,pendhoje:rPendHojePage,green:rGreenPage,red:rRedPage,void:rVoidPage,meses:rMeses})[p]?.();
+  ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,pendhoje:rPendHojePage,green:rGreenPage,red:rRedPage,void:rVoidPage,meses:rMeses,diario:rDiario})[p]?.();
 }
 
 function styleRes(s){
@@ -997,7 +1036,7 @@ function startListeners(){
       // re-render página ativa
       const active=document.querySelector('.page.active')?.id?.replace('page-','');
       if(active){
-        ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,pendhoje:rPendHojePage,green:rGreenPage,red:rRedPage,void:rVoidPage,meses:rMeses})[active]?.();
+        ({dash:rDash,nova:rPend,hist:renderHist,casas:rCasas,esp:rEsp,pend:rPendPage,pendhoje:rPendHojePage,green:rGreenPage,red:rRedPage,void:rVoidPage,meses:rMeses,diario:rDiario})[active]?.();
       } else { rDash(); }
     }, err=>{ console.error('Bets listener error:',err); toast('⚠ Erro de sincronização'); });
 
@@ -1136,7 +1175,7 @@ function rDash(){
   const _pb=document.getElementById('sb-pend-badge');
   if(_pb){if(pend.length>0){_pb.textContent=pend.length;_pb.style.display='inline';}else _pb.style.display='none';}
 
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   const pendHojeCnt=ab.filter(b=>(!b.res||b.res==='PENDENTE')&&b.dat===hoje).length;
   const _phb=document.getElementById('sb-pendhoje-badge');
   if(_phb){if(pendHojeCnt>0){_phb.textContent=pendHojeCnt;_phb.style.display='inline';}else _phb.style.display='none';}
@@ -1392,7 +1431,7 @@ function clrForm(){
   ['f-esp','f-casa','f-ap','f-odd','f-stake'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('f-res').value='PENDENTE';
   document.getElementById('f-res').style.color='';
-  document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('f-data').value=hojeLocal();
 }
 
 function rPend(){
@@ -1455,7 +1494,7 @@ async function resolvePage(id,r){
 // PÁGINA PENDENTES HOJE
 // ══════════════════════════════════════════════════════════════════
 function rPendHojePage(){
-  const hoje=new Date().toISOString().split('T')[0];
+  const hoje=hojeLocal();
   const pend=activeBets().filter(b=>(!b.res||b.res==='PENDENTE')&&b.dat===hoje);
   const stake=pend.reduce((s,b)=>s+parseFloat(b.stake||0),0);
   const pot=pend.reduce((s,b)=>s+parseFloat(b.stake||0)*(parseFloat(b.odd||1)-1),0);
@@ -1736,6 +1775,60 @@ async function confirmCloseMonth(){
 // ══════════════════════════════════════════════════════════════════
 // MESES FECHADOS
 // ══════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// RESUMO DIÁRIO
+// ══════════════════════════════════════════════════════════════════
+function rDiario(){
+  // considera TODAS as apostas resolvidas, incluindo as já arquivadas em meses fechados
+  const resolved=bets.filter(b=>b.dat&&b.res&&b.res!=='PENDENTE');
+  const groups={};
+  resolved.forEach(b=>{
+    groups[b.dat]=groups[b.dat]||[];
+    groups[b.dat].push(b);
+  });
+  const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a)); // mais recente primeiro
+  document.getElementById('diario-sub').textContent=dates.length+' dia'+(dates.length!==1?'s':'')+' com apostas resolvidas';
+  document.getElementById('diario-list').innerHTML=dates.length
+    ? `<div class="g3">`+dates.map(date=>{
+        const list=groups[date];
+        const lucro=list.reduce((s,b)=>s+(luc(b)||0),0);
+        const stake=list.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+        const g=list.filter(b=>b.res==='GREEN').length;
+        const r=list.filter(b=>b.res==='RED').length;
+        const v=list.filter(b=>b.res==='VOID').length;
+        const roi=stake>0?(lucro/stake*100):0;
+        const dataFmt=new Date(date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        return`<div class="card" style="cursor:pointer" onclick="rDiaDetalhe('${date}')">
+          <div class="ch"><span class="ct" style="text-transform:capitalize">${dataFmt}</span><span class="badge ${lucro>=0?'bG':'bR'}">${fmtR(lucro)}</span></div>
+          <div class="card-p" style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>Apostas</span><span class="mono">${list.length}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>Green / Red / Void</span><span class="mono"><span style="color:var(--green2)">${g}</span> / <span style="color:var(--red)">${r}</span> / <span style="color:var(--blue)">${v}</span></span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>Stake total</span><span class="mono">${fmtR(stake)}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)"><span>ROI</span><span class="mono" style="color:${roi>=0?'var(--green2)':'var(--red)'}">${roi.toFixed(1)}%</span></div>
+          </div>
+        </div>`;
+      }).join('')+`</div>`
+    : '<div class="card"><div class="card-p"><div class="empty">Nenhuma aposta resolvida ainda</div></div></div>';
+}
+
+function rDiaDetalhe(date){
+  const list=bets.filter(b=>b.dat===date&&b.res&&b.res!=='PENDENTE');
+  const dataFmt=new Date(date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('dia-detalhe-titulo').textContent=dataFmt+' — '+list.length+' apostas';
+  document.getElementById('dia-detalhe-tbody').innerHTML=list.length
+    ?list.map(b=>{const l=luc(b);return`<tr>
+      <td>${b.esp||'—'}</td><td>${b.casa||'—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${b.ap||'—'}</td>
+      <td class="mono">${parseFloat(b.odd||0).toFixed(2)}</td>
+      <td>${bdg(b.res)}</td>
+      <td class="mono">${fmtR(b.stake)}</td>
+      ${lCell(l)}
+    </tr>`}).join('')
+    :'<tr><td colspan="7" class="empty">Sem dados</td></tr>';
+  document.getElementById('dia-detalhe').style.display='block';
+  document.getElementById('dia-detalhe').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
 function rMeses(){
   const archived=bets.filter(b=>b.arquivo);
   const groups={};
@@ -1915,7 +2008,7 @@ auth.onAuthStateChanged(async user=>{
       const unsub=betsCol().limit(1).onSnapshot(()=>{unsub();resolve();});
     });
     setLoading(false);
-    document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+    document.getElementById('f-data').value=hojeLocal();
     rDash();
   } else {
     setLoading(false);
