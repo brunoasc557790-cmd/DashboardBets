@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>SuperOdds Diário</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0b0d10;--s1:#111418;--s2:#181c22;--s3:#1f252e;--b0:#262c38;--green:#00f590;--gbg:#032210;--gbr:#0a5c28;--red:#ff4d6a;--rbg:#200810;--rbr:#6b1525;--blue:#38c9ff;--bbg:#051520;--bbr:#0a3050;--amber:#ffc94d;--text:#eaf0ff;--t2:#8892a8;--t3:#4a5068}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Outfit','Segoe UI',system-ui,sans-serif;font-size:15px;overscroll-behavior:none}
+button,input,select{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+header{position:sticky;top:0;z-index:20;background:var(--s1);border-bottom:1px solid var(--b0);padding:calc(10px + env(safe-area-inset-top)) 10px 10px;display:flex;align-items:center;gap:6px}
+.nav{width:44px;height:44px;border-radius:12px;border:1px solid var(--b0);background:var(--s2);font-size:22px;cursor:pointer}
+.nav:active{background:var(--s3)}
+.day{flex:1;text-align:center;cursor:pointer;padding:2px 0}
+.day b{display:block;font-size:17px;font-weight:700}
+.day span{font-size:12px;color:var(--t2)}
+#dpick{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+#install{display:none;border:1px solid var(--gbr);background:var(--gbg);color:var(--green);border-radius:10px;padding:8px 10px;font-weight:700;font-size:12px}
+
+.sum{padding:18px 16px 14px}
+.sum-label{font-size:13px;color:var(--t2)}
+.sum-val{font-size:46px;font-weight:800;line-height:1.1;letter-spacing:-1px}
+.sum-val.pos{color:var(--green)}.sum-val.neg{color:var(--red)}
+.chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chip{font-size:13px;padding:5px 11px;border-radius:20px;background:var(--s2);border:1px solid var(--b0);color:var(--t2)}
+.chip b{color:var(--text);font-weight:700}
+
+.list{padding:4px 12px calc(110px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.card{background:var(--s2);border:1.5px solid var(--b0);border-radius:14px;padding:12px 13px}
+.card.GREEN{border-color:var(--gbr);background:var(--gbg)}
+.card.RED{border-color:var(--rbr);background:var(--rbg)}
+.card.VOID{border-color:var(--bbr);background:var(--bbg)}
+.top{display:flex;gap:9px;align-items:flex-start}
+.emo{font-size:20px;line-height:1.2}
+.ap{flex:1;font-weight:600;line-height:1.35;word-break:break-word}
+.more{border:none;background:none;color:var(--t2);font-size:20px;padding:0 6px;cursor:pointer;line-height:1}
+.meta{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:13px;color:var(--t2)}
+.odd{color:var(--amber);font-weight:700;font-size:15px}
+.ret{margin-left:auto;font-weight:700}
+.ret.pos{color:var(--green)}.ret.neg{color:var(--red)}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rb{height:44px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s3);color:var(--t2);font-weight:700;font-size:13px;cursor:pointer}
+.rb:active{transform:scale(.96)}
+.rb.on.g{background:var(--gbg);border-color:var(--green);color:var(--green)}
+.rb.on.r{background:var(--rbg);border-color:var(--red);color:var(--red)}
+.rb.on.v{background:var(--bbg);border-color:var(--blue);color:var(--blue)}
+.empty{text-align:center;color:var(--t3);padding:48px 20px;line-height:1.6}
+
+.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));height:56px;padding:0 22px;border-radius:28px;border:none;background:var(--green);color:#000;font-weight:800;font-size:16px;box-shadow:0 6px 22px rgba(0,245,144,.25);cursor:pointer;z-index:15}
+.fab:active{transform:scale(.97)}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:none}
+.scrim.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--s1);border-top:1px solid var(--b0);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .22s ease;max-height:92vh;overflow-y:auto}
+.sheet.open{transform:none}
+.sheet h2{font-size:17px;margin-bottom:12px}
+.f{margin-bottom:10px}
+.f label{display:block;font-size:12px;color:var(--t2);margin-bottom:4px}
+.f input,.f select{width:100%;height:46px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s2);padding:0 12px;outline:none}
+.f input:focus,.f select:focus{border-color:var(--green)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save{width:100%;height:50px;border:none;border-radius:12px;background:var(--green);color:#000;font-weight:800;font-size:16px;margin-top:6px;cursor:pointer}
+.del{width:100%;height:44px;border:1.5px solid var(--rbr);border-radius:12px;background:none;color:var(--red);font-weight:700;margin-top:8px;cursor:pointer;display:none}
+
+.login{display:none;text-align:center;padding:90px 24px}
+.login p{color:var(--t2);margin:8px 0 22px}
+.login button{height:50px;padding:0 26px;border-radius:12px;border:none;background:var(--green);color:#000;font-weight:800;font-size:16px}
+.toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--s3);border:1px solid var(--b0);border-radius:10px;padding:10px 16px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;font-size:14px}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.sheet{transition:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="nav" id="prev" aria-label="Dia anterior">‹</button>
+  <div class="day" id="day"><b id="dl">Hoje</b><span id="ds"></span></div>
+  <button id="install">Instalar</button>
+  <button class="nav" id="next" aria-label="Próximo dia">›</button>
+  <input type="date" id="dpick">
+</header>
+
+<div class="login" id="login">
+  <h2>Entre para ver suas apostas</h2>
+  <p>Use a mesma conta Google do painel SuperOdds.</p>
+  <button id="loginBtn">Entrar com Google</button>
+</div>
+
+<div id="app" style="display:none">
+  <section class="sum">
+    <div class="sum-label">Resultado do dia</div>
+    <div class="sum-val num" id="total">R$ 0,00</div>
+    <div class="chips" id="chips"></div>
+  </section>
+  <main class="list" id="list"></main>
+  <button class="fab" id="fab">+ Nova aposta</button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true">
+  <h2 id="sheetTitle">Nova aposta</h2>
+  <div class="f"><label for="fAp">Aposta</label><input id="fAp" placeholder="Ex: Flamengo vence + mais de 1.5 gols" autocomplete="off"></div>
+  <div class="row">
+    <div class="f"><label for="fOdd">Odd</label><input id="fOdd" inputmode="decimal" placeholder="2.10"></div>
+    <div class="f"><label for="fStake">Valor (R$)</label><input id="fStake" inputmode="decimal" placeholder="50"></div>
+  </div>
+  <div class="row">
+    <div class="f"><label for="fEsp">Esporte</label>
+      <select id="fEsp"><option>Futebol</option><option>Basquete</option><option>Tênis</option><option>MMA</option><option>Vôlei</option><option>E-sports</option><option>Outros</option></select></div>
+    <div class="f"><label for="fCasa">Casa</label><input id="fCasa" list="casas" placeholder="Bet365" autocomplete="off"><datalist id="casas"></datalist></div>
+  </div>
+  <div class="f"><label for="fDat">Data</label><input type="date" id="fDat"></div>
+  <button class="save" id="save">Salvar aposta</button>
+  <button class="del" id="del">Excluir aposta</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// CONFIGURAÇÃO: cole aqui o firebaseConfig do seu painel SuperOdds
+// (é o mesmo objeto que está no HTML do painel). Com ele, o app usa
+// as mesmas apostas do painel. Deixe null para usar só neste celular.
+// ─────────────────────────────────────────────────────────────
+const FIREBASE_CONFIG = null;
+/* exemplo:
+const FIREBASE_CONFIG = {
+  apiKey: "...", authDomain: "...", projectId: "...",
+  storageBucket: "...", messagingSenderId: "...", appId: "..."
+};
+*/
+
+const EMOJI = {Futebol:'⚽',Basquete:'🏀','Tênis':'🎾',MMA:'🥊','Vôlei':'🏐','E-sports':'🎮',Outros:'🎲'};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const brl = v => (v<0?'-':'') + 'R$ ' + Math.abs(v).toFixed(2).replace('.',',');
+const num = s => parseFloat(String(s).replace('R$','').replace(',','.').trim());
+
+let day = iso(new Date()), bets = [], unsub = null, store = null, editing = null;
+
+// ── armazenamento: Firestore (mesmas apostas do painel) ou local ──
+function localStore(){
+  const K='superodds_bets', all=()=>JSON.parse(localStorage.getItem(K)||'[]'), save=a=>localStorage.setItem(K,JSON.stringify(a));
+  let cb=null, d=null; const emit=()=>cb&&cb(all().filter(b=>b.dat===d));
+  return {
+    sub(dia,f){d=dia;cb=f;emit();return()=>{cb=null}},
+    add(b){const a=all();a.push({...b,id:Date.now().toString(36),createdAt:{seconds:Date.now()/1000}});save(a);emit()},
+    upd(id,p){save(all().map(b=>b.id===id?{...b,...p}:b));emit()},
+    del(id){save(all().filter(b=>b.id!==id));emit()}
+  };
+}
+function fbStore(uid){
+  const col = firebase.firestore().collection('users').doc(uid).collection('bets');
+  return {
+    sub:(dia,f)=>col.where('dat','==',dia).onSnapshot(s=>f(s.docs.map(x=>({id:x.id,...x.data()}))),e=>toast('Erro ao carregar: '+e.code)),
+    add:b=>col.add({...b,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>toast('Erro ao salvar: '+e.code)),
+    upd:(id,p)=>col.doc(id).update(p).catch(e=>toast('Erro ao salvar: '+e.code)),
+    del:id=>col.doc(id).delete().catch(e=>toast('Erro ao excluir: '+e.code))
+  };
+}
+
+// ── cálculo ──
+const ret = b => b.res==='GREEN' ? b.stake*(b.odd-1) : b.res==='RED' ? -b.stake : 0;
+
+function render(){
+  const g=bets.filter(b=>b.res==='GREEN'), r=bets.filter(b=>b.res==='RED'), v=bets.filter(b=>b.res==='VOID'), p=bets.filter(b=>b.res==='PENDENTE');
+  const total = bets.reduce((s,b)=>s+ret(b),0);
+  const invest = bets.filter(b=>b.res!=='VOID').reduce((s,b)=>s+(+b.stake||0),0);
+  const t=$('total'); t.textContent=(total>0?'+':'')+brl(total); t.className='sum-val num'+(total>0?' pos':total<0?' neg':'');
+  $('chips').innerHTML = bets.length
+    ? `<span class="chip">🟢 <b>${g.length}</b></span><span class="chip">🔴 <b>${r.length}</b></span><span class="chip">⚪ <b>${v.length}</b></span><span class="chip">⏳ <b>${p.length}</b></span><span class="chip">Apostado <b class="num">${brl(invest)}</b></span>`
+    : '';
+  const order = {PENDENTE:0,GREEN:1,RED:1,VOID:2};
+  const sorted = [...bets].sort((a,b)=>order[a.res]-order[b.res] || (a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+  $('list').innerHTML = sorted.length ? sorted.map(b=>{
+    const x=ret(b), rt = b.res==='GREEN'||b.res==='RED' ? `<span class="ret num ${x>0?'pos':'neg'}">${x>0?'+':''}${brl(x)}</span>` : '';
+    return `<div class="card ${esc(b.res)}">
+      <div class="top"><span class="emo">${EMOJI[b.esp]||'🎲'}</span><div class="ap">${esc(b.ap)}</div><button class="more" data-edit="${esc(b.id)}" aria-label="Editar">⋯</button></div>
+      <div class="meta">${b.casa?`<span>${esc(b.casa)}</span>`:''}<span class="odd num">@${esc(b.odd)}</span><span class="num">${brl(+b.stake||0)}</span>${rt}</div>
+      <div class="btns">
+        <button class="rb g ${b.res==='GREEN'?'on':''}" data-res="GREEN" data-id="${esc(b.id)}">🟢 Green</button>
+        <button class="rb r ${b.res==='RED'?'on':''}" data-res="RED" data-id="${esc(b.id)}">🔴 Red</button>
+        <button class="rb v ${b.res==='VOID'?'on':''}" data-res="VOID" data-id="${esc(b.id)}">⚪ Void</button>
+      </div></div>`;
+  }).join('') : `<div class="empty">Nenhuma aposta neste dia.<br>Toque em “+ Nova aposta” para começar.</div>`;
+  const casas=[...new Set([...(JSON.parse(localStorage.getItem('so_casas')||'[]'))])];
+  $('casas').innerHTML = casas.map(c=>`<option value="${esc(c)}">`).join('');
+}
+
+// ── dia ──
+function setDay(d){
+  day=d; const dt=new Date(d+'T12:00:00'), hoje=iso(new Date()), ontem=iso(new Date(Date.now()-864e5)), amanha=iso(new Date(Date.now()+864e5));
+  $('dl').textContent = d===hoje?'Hoje':d===ontem?'Ontem':d===amanha?'Amanhã':dt.toLocaleDateString('pt-BR',{weekday:'long'});
+  $('ds').textContent = dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  if(unsub) unsub();
+  unsub = store.sub(day, list=>{bets=list;render()});
+}
+const shift = n => { const d=new Date(day+'T12:00:00'); d.setDate(d.getDate()+n); setDay(iso(d)); };
+$('prev').onclick=()=>shift(-1); $('next').onclick=()=>shift(1);
+$('day').onclick=()=>{ $('dpick').value=day; ($('dpick').showPicker?$('dpick').showPicker():$('dpick').click()); };
+$('dpick').onchange=e=>e.target.value&&setDay(e.target.value);
+
+// ── resolver (toque de novo no mesmo botão volta para pendente) ──
+$('list').onclick=e=>{
+  const rb=e.target.closest('[data-res]'), ed=e.target.closest('[data-edit]');
+  if(rb){ const b=bets.find(x=>x.id===rb.dataset.id); store.upd(b.id,{res:b.res===rb.dataset.res?'PENDENTE':rb.dataset.res}); navigator.vibrate&&navigator.vibrate(15); }
+  if(ed){ openSheet(bets.find(x=>x.id===ed.dataset.edit)); }
+};
+
+// ── formulário ──
+function openSheet(b){
+  editing=b||null;
+  $('sheetTitle').textContent=b?'Editar aposta':'Nova aposta';
+  $('fAp').value=b?b.ap:''; $('fOdd').value=b?b.odd:''; $('fStake').value=b?b.stake:'';
+  $('fEsp').value=b?b.esp:'Futebol'; $('fCasa').value=b?b.casa:(localStorage.getItem('so_ultima_casa')||''); $('fDat').value=b?b.dat:day;
+  $('del').style.display=b?'block':'none'; $('save').textContent=b?'Salvar alterações':'Salvar aposta';
+  $('scrim').classList.add('open'); $('sheet').classList.add('open');
+  if(!b) setTimeout(()=>$('fAp').focus(),250);
+}
+function closeSheet(){ $('scrim').classList.remove('open'); $('sheet').classList.remove('open'); }
+$('fab').onclick=()=>openSheet(); $('scrim').onclick=closeSheet;
+$('save').onclick=()=>{
+  const ap=$('fAp').value.trim(), odd=num($('fOdd').value), stake=num($('fStake').value);
+  if(!ap) return toast('Descreva a aposta');
+  if(!(odd>1)) return toast('Odd inválida (ex: 2.10)');
+  if(!(stake>0)) return toast('Informe o valor apostado');
+  const casa=$('fCasa').value.trim(), data={ap,odd,stake,esp:$('fEsp').value,casa,dat:$('fDat').value||day};
+  if(casa){ const c=JSON.parse(localStorage.getItem('so_casas')||'[]'); if(!c.includes(casa)) c.push(casa); localStorage.setItem('so_casas',JSON.stringify(c)); localStorage.setItem('so_ultima_casa',casa); }
+  if(editing) store.upd(editing.id,data); else store.add({...data,res:'PENDENTE'});
+  closeSheet(); toast(editing?'Alterações salvas':'Aposta salva');
+  if(data.dat!==day) setDay(data.dat);
+};
+$('del').onclick=()=>{ if(editing && confirm('Excluir esta aposta?')){ store.del(editing.id); closeSheet(); toast('Aposta excluída'); } };
+
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ── iniciar ──
+function start(s){ store=s; $('login').style.display='none'; $('app').style.display='block'; setDay(day); }
+
+if(FIREBASE_CONFIG){
+  const load = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+  const V='https://www.gstatic.com/firebasejs/10.12.2/';
+  Promise.all([load(V+'firebase-app-compat.js')])
+    .then(()=>Promise.all([load(V+'firebase-auth-compat.js'),load(V+'firebase-firestore-compat.js')]))
+    .then(()=>{
+      firebase.initializeApp(FIREBASE_CONFIG);
+      try{ firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+      const auth=firebase.auth();
+      $('loginBtn').onclick=()=>{
+        const p=new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p));
+      };
+      auth.onAuthStateChanged(u=>{
+        if(u) start(fbStore(u.uid));
+        else { $('app').style.display='none'; $('login').style.display='block'; }
+      });
+    })
+    .catch(()=>{ toast('Sem internet: usando dados deste celular'); start(localStore()); });
+} else {
+  start(localStore());
+}
+
+// ── instalar / service worker ──
+let ip=null;
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); ip=e; $('install').style.display='block'; });
+$('install').onclick=async()=>{ if(!ip) return; ip.prompt(); await ip.userChoice; ip=null; $('install').style.display='none'; };
+addEventListener('appinstalled',()=>{ $('install').style.display='none'; });
+if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+</script>
+</body>
+</html>
