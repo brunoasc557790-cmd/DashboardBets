@@ -1,4 +1,4 @@
-const C = 'superodds-v1';
+const C = 'superodds-v2';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(C).then(c => c.addAll(SHELL)));
@@ -12,7 +12,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
   if (e.request.method !== 'GET') return;
-  if (u.origin !== location.origin && u.hostname !== 'www.gstatic.com' && u.hostname !== 'fonts.gstatic.com' && u.hostname !== 'fonts.googleapis.com') return;
+  if (u.origin !== location.origin && u.hostname !== 'www.gstatic.com' && u.hostname !== 'fonts.gstatic.com' && u.hostname !== 'fonts.googleapis.com' && u.hostname !== 'cdnjs.cloudflare.com') return;
   e.respondWith(
     fetch(e.request).then(r => {
       const copy = r.clone();
