@@ -3,277 +3,382 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0d10">
+<meta name="theme-color" content="#080a0f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>SuperOdds Diário</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>SuperOdds</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#0b0d10;--s1:#111418;--s2:#181c22;--s3:#1f252e;--b0:#262c38;--green:#00f590;--gbg:#032210;--gbr:#0a5c28;--red:#ff4d6a;--rbg:#200810;--rbr:#6b1525;--blue:#38c9ff;--bbg:#051520;--bbr:#0a3050;--amber:#ffc94d;--text:#eaf0ff;--t2:#8892a8;--t3:#4a5068}
-html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Outfit','Segoe UI',system-ui,sans-serif;font-size:15px;overscroll-behavior:none}
+:root{--bg:#080a0f;--s0:#0e1118;--s1:#141720;--s2:#191d28;--s3:#1f2433;--b0:#272d40;--b1:#343c55;--text:#eaf0ff;--t2:#909bbf;--t3:#485070;--green:#00d97e;--g2:#00f590;--gbg:#031811;--gbr:#064d2a;--red:#ff4d6a;--rbg:#1a0810;--rbr:#55102a;--blue:#38c9ff;--bbg:#031520;--bbr:#095080;--amber:#ffc94d;--abg:#180f00;--abr:#4a3000;--mono:'JetBrains Mono',monospace;--sans:'Outfit',sans-serif}
+html,body{background:var(--bg);color:var(--text);font:15px/1.4 var(--sans);overscroll-behavior:none}
 button,input,select{font:inherit;color:inherit}
-.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pos{color:var(--g2)}.neg{color:var(--red)}.amb{color:var(--amber)}
+[hidden]{display:none!important}
 
-header{position:sticky;top:0;z-index:20;background:var(--s1);border-bottom:1px solid var(--b0);padding:calc(10px + env(safe-area-inset-top)) 10px 10px;display:flex;align-items:center;gap:6px}
-.nav{width:44px;height:44px;border-radius:12px;border:1px solid var(--b0);background:var(--s2);font-size:22px;cursor:pointer}
-.nav:active{background:var(--s3)}
-.day{flex:1;text-align:center;cursor:pointer;padding:2px 0}
-.day b{display:block;font-size:17px;font-weight:700}
+.tab{display:none;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.tab.on{display:block}
+.bar{position:sticky;top:0;z-index:20;background:var(--s0);border-bottom:1px solid var(--b0);padding:calc(10px + env(safe-area-inset-top)) 10px 10px;display:flex;align-items:center;gap:6px;min-height:64px}
+.bar h1{font-size:19px;font-weight:700;flex:1;padding-left:6px}
+.nv{width:44px;height:44px;border-radius:12px;border:1px solid var(--b0);background:var(--s2);font-size:22px;cursor:pointer}
+.day{flex:1;text-align:center;cursor:pointer}
+.day b{display:block;font-size:17px;font-weight:700;text-transform:capitalize}
 .day span{font-size:12px;color:var(--t2)}
 #dpick{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
-#install{display:none;border:1px solid var(--gbr);background:var(--gbg);color:var(--green);border-radius:10px;padding:8px 10px;font-weight:700;font-size:12px}
 
-.sum{padding:18px 16px 14px}
-.sum-label{font-size:13px;color:var(--t2)}
-.sum-val{font-size:46px;font-weight:800;line-height:1.1;letter-spacing:-1px}
-.sum-val.pos{color:var(--green)}.sum-val.neg{color:var(--red)}
-.chips{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.chip{font-size:13px;padding:5px 11px;border-radius:20px;background:var(--s2);border:1px solid var(--b0);color:var(--t2)}
-.chip b{color:var(--text);font-weight:700}
+.banner{margin:14px 12px 0;padding:16px;border-radius:16px;border:1.5px solid var(--gbr);background:var(--gbg)}
+.banner.bneg{border-color:var(--rbr);background:var(--rbg)}
+.bl{font-size:12px;color:var(--t2)}
+.bv{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1.15;margin:2px 0}
+.bs{font-size:12px;color:var(--t2)}
+.chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.chip{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--s2);border:1px solid var(--b0);color:var(--t2)}
+.chip b{color:var(--text);font-family:var(--mono)}
+.po{display:block;width:calc(100% - 24px);margin:12px 12px 0;padding:11px;border-radius:12px;border:1px solid var(--abr);background:var(--abg);color:var(--amber);font-weight:600;cursor:pointer}
 
-.list{padding:4px 12px calc(110px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.list{padding:12px;display:flex;flex-direction:column;gap:10px}
 .card{background:var(--s2);border:1.5px solid var(--b0);border-radius:14px;padding:12px 13px}
-.card.GREEN{border-color:var(--gbr);background:var(--gbg)}
-.card.RED{border-color:var(--rbr);background:var(--rbg)}
-.card.VOID{border-color:var(--bbr);background:var(--bbg)}
+.card.GREEN{border-color:var(--gbr);background:var(--gbg)}.card.RED{border-color:var(--rbr);background:var(--rbg)}.card.VOID{border-color:var(--bbr);background:var(--bbg)}
 .top{display:flex;gap:9px;align-items:flex-start}
 .emo{font-size:20px;line-height:1.2}
 .ap{flex:1;font-weight:600;line-height:1.35;word-break:break-word}
-.more{border:none;background:none;color:var(--t2);font-size:20px;padding:0 6px;cursor:pointer;line-height:1}
-.meta{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:13px;color:var(--t2)}
-.odd{color:var(--amber);font-weight:700;font-size:15px}
-.ret{margin-left:auto;font-weight:700}
-.ret.pos{color:var(--green)}.ret.neg{color:var(--red)}
+.more{border:none;background:none;color:var(--t2);font-size:22px;padding:0 6px;line-height:1;cursor:pointer}
+.meta{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:12px;color:var(--t2);flex-wrap:wrap}
+.tag{background:var(--s3);border:1px solid var(--b0);border-radius:6px;padding:1px 8px}
+.odd{color:var(--amber);font-weight:700;font-size:14px}
+.ret{margin-left:auto;font-weight:700;font-size:14px}
 .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .rb{height:44px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s3);color:var(--t2);font-weight:700;font-size:13px;cursor:pointer}
 .rb:active{transform:scale(.96)}
-.rb.on.g{background:var(--gbg);border-color:var(--green);color:var(--green)}
-.rb.on.r{background:var(--rbg);border-color:var(--red);color:var(--red)}
-.rb.on.v{background:var(--bbg);border-color:var(--blue);color:var(--blue)}
-.empty{text-align:center;color:var(--t3);padding:48px 20px;line-height:1.6}
+.rb.on.g{background:var(--gbg);border-color:var(--g2);color:var(--g2)}.rb.on.r{background:var(--rbg);border-color:var(--red);color:var(--red)}.rb.on.v{background:var(--bbg);border-color:var(--blue);color:var(--blue)}
+.empty{text-align:center;color:var(--t3);padding:40px 20px;line-height:1.6}
 
-.fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));height:56px;padding:0 22px;border-radius:28px;border:none;background:var(--green);color:#000;font-weight:800;font-size:16px;box-shadow:0 6px 22px rgba(0,245,144,.25);cursor:pointer;z-index:15}
-.fab:active{transform:scale(.97)}
+.kg{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 12px 0}
+.kpi{background:var(--s2);border:1px solid var(--b0);border-radius:12px;padding:11px 12px}
+.kpi.g{border-color:var(--gbr);background:var(--gbg)}.kpi.r{border-color:var(--rbr);background:var(--rbg)}.kpi.b{border-color:var(--bbr);background:var(--bbg)}.kpi.a{border-color:var(--abr);background:var(--abg)}
+.kl{font-size:11px;color:var(--t2)}
+.kv{font-family:var(--mono);font-size:20px;font-weight:700;margin-top:2px}
+.ks{font-size:11px;color:var(--t3);margin-top:1px}
+.sec{margin:14px 12px 0;background:var(--s2);border:1px solid var(--b0);border-radius:14px;overflow:hidden}
+.sec h3{font-size:13px;font-weight:600;color:var(--t2);padding:12px 14px 6px}
+.cv{height:190px;padding:4px 10px 12px;position:relative}
+.row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--b0);font-size:14px}
+.row .n{flex:1;font-weight:500}
+.row .c{color:var(--t2);font-size:12px;font-family:var(--mono)}
+.row .v{font-family:var(--mono);font-weight:700;min-width:90px;text-align:right}
+.drow{cursor:pointer}.drow:active{background:var(--s3)}
 
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:none}
-.scrim.open{display:block}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--s1);border-top:1px solid var(--b0);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .22s ease;max-height:92vh;overflow-y:auto}
+.nb{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--s0);border-top:1px solid var(--b0);display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.ni{border:none;background:none;color:var(--t3);display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px;height:50px;justify-content:center;cursor:pointer}
+.ni i{font-style:normal;font-size:20px}
+.ni.on{color:var(--g2)}
+.add{width:56px;height:56px;border-radius:50%;border:none;background:var(--g2);color:#000;font-size:30px;font-weight:700;justify-self:center;margin-top:-22px;box-shadow:0 6px 20px rgba(0,245,144,.3);cursor:pointer}
+.add:active{transform:scale(.94)}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:40;display:none}.scrim.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--s1);border-top:1px solid var(--b1);border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .22s ease;max-height:94vh;overflow-y:auto}
 .sheet.open{transform:none}
-.sheet h2{font-size:17px;margin-bottom:12px}
+.sheet h2{font-size:18px;margin-bottom:12px}
 .f{margin-bottom:10px}
 .f label{display:block;font-size:12px;color:var(--t2);margin-bottom:4px}
 .f input,.f select{width:100%;height:46px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s2);padding:0 12px;outline:none}
-.f input:focus,.f select:focus{border-color:var(--green)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.save{width:100%;height:50px;border:none;border-radius:12px;background:var(--green);color:#000;font-weight:800;font-size:16px;margin-top:6px;cursor:pointer}
-.del{width:100%;height:44px;border:1.5px solid var(--rbr);border-radius:12px;background:none;color:var(--red);font-weight:700;margin-top:8px;cursor:pointer;display:none}
+.f input:focus,.f select:focus{border-color:var(--g2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg button{height:42px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s2);color:var(--t2);font-weight:600;font-size:12px;cursor:pointer}
+.seg .on[data-r=PENDENTE]{border-color:var(--amber);color:var(--amber);background:var(--abg)}
+.seg .on[data-r=GREEN]{border-color:var(--g2);color:var(--g2);background:var(--gbg)}
+.seg .on[data-r=RED]{border-color:var(--red);color:var(--red);background:var(--rbg)}
+.seg .on[data-r=VOID]{border-color:var(--blue);color:var(--blue);background:var(--bbg)}
+.btn{width:100%;height:50px;border:none;border-radius:12px;background:var(--g2);color:#000;font-weight:700;font-size:16px;cursor:pointer}
+.btn.q{background:var(--s3);color:var(--text);border:1px solid var(--b1);font-size:14px;height:44px}
+.btn.d{background:none;border:1.5px solid var(--rbr);color:var(--red);font-size:14px;height:44px;margin-top:8px}
+.sm{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--gbr);background:var(--gbg);color:var(--g2);font-size:12px;font-weight:600;cursor:pointer;margin-left:8px}
+.inl{display:flex;gap:8px}.inl input{flex:1;height:46px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s2);padding:0 12px;outline:none}.inl .btn{width:auto;padding:0 16px;height:46px;font-size:14px}
+.p{padding:12px 14px}.p p{font-size:13px;color:var(--t2);margin-bottom:10px}
+.p .f input{width:100%;height:46px;border-radius:10px;border:1.5px solid var(--b0);background:var(--s2);padding:0 12px}
 
-.login{display:none;text-align:center;padding:90px 24px}
-.login p{color:var(--t2);margin:8px 0 22px}
-.login button{height:50px;padding:0 26px;border-radius:12px;border:none;background:var(--green);color:#000;font-weight:800;font-size:16px}
-.toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--s3);border:1px solid var(--b0);border-radius:10px;padding:10px 16px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;font-size:14px}
-.toast.show{opacity:1}
+#login{text-align:center;padding:110px 24px}
+#login h1{font-size:28px;margin-bottom:6px}#login p{color:var(--t2);margin-bottom:24px}
+#login .btn{width:auto;padding:0 28px}
+.toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--s3);border:1px solid var(--b1);border-radius:10px;padding:10px 16px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;font-size:14px;max-width:90vw}
+.toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){.sheet{transition:none}}
 </style>
 </head>
 <body>
 
-<header>
-  <button class="nav" id="prev" aria-label="Dia anterior">‹</button>
-  <div class="day" id="day"><b id="dl">Hoje</b><span id="ds"></span></div>
-  <button id="install">Instalar</button>
-  <button class="nav" id="next" aria-label="Próximo dia">›</button>
-  <input type="date" id="dpick">
-</header>
-
-<div class="login" id="login">
-  <h2>Entre para ver suas apostas</h2>
-  <p>Use a mesma conta Google do painel SuperOdds.</p>
-  <button id="loginBtn">Entrar com Google</button>
+<div id="login" hidden>
+  <h1>⚡ SuperOdds</h1>
+  <p>Entre com a mesma conta Google do painel.</p>
+  <button class="btn" id="loginBtn">Entrar com Google</button>
 </div>
 
-<div id="app" style="display:none">
-  <section class="sum">
-    <div class="sum-label">Resultado do dia</div>
-    <div class="sum-val num" id="total">R$ 0,00</div>
-    <div class="chips" id="chips"></div>
+<div id="app" hidden>
+  <section class="tab on" id="t-dia">
+    <div class="bar">
+      <button class="nv" data-d="-1" aria-label="Dia anterior">‹</button>
+      <div class="day" id="day"><b id="dl"></b><span id="ds"></span></div>
+      <button class="nv" data-d="1" aria-label="Próximo dia">›</button>
+      <input type="date" id="dpick">
+    </div>
+    <div class="banner" id="dban"><div class="bl">Resultado do dia</div><div class="bv" id="dtot">R$ 0,00</div><div class="bs" id="dsub"></div><div class="chips" id="dchips"></div></div>
+    <div id="po"></div>
+    <div class="list" id="list"></div>
   </section>
-  <main class="list" id="list"></main>
-  <button class="fab" id="fab">+ Nova aposta</button>
+
+  <section class="tab" id="t-painel">
+    <div class="bar"><h1>Painel</h1></div>
+    <div class="banner" id="pban"><div class="bl">Resultado total</div><div class="bv" id="ptot"></div><div class="bs" id="psub"></div></div>
+    <div class="kg" id="kpis"></div>
+    <div class="sec"><h3>Evolução do lucro</h3><div class="cv"><canvas id="cL"></canvas></div></div>
+    <div class="sec"><h3 id="mt">Lucro por mês</h3><div class="cv"><canvas id="cM"></canvas></div></div>
+    <div class="sec"><h3>Por casa</h3><div id="pcasa"></div></div>
+    <div class="sec"><h3>Por esporte</h3><div id="pesp"></div></div>
+  </section>
+
+  <section class="tab" id="t-dias">
+    <div class="bar"><h1>Resumo diário</h1></div>
+    <div class="list" id="dias"></div>
+  </section>
+
+  <section class="tab" id="t-mais">
+    <div class="bar"><h1>Mais</h1></div>
+    <div class="sec"><h3>Conta</h3><div class="p"><p id="who"></p><button class="btn q" id="logout">Sair</button><button class="btn q" id="install" style="margin-top:8px" hidden>Instalar app</button></div></div>
+    <div class="sec"><h3>Casas de aposta</h3><div id="cm"></div>
+      <div class="p"><div class="inl"><input id="newCasa" placeholder="Nova casa" autocomplete="off"><button class="btn" id="addCasaBtn">Add</button></div></div></div>
+    <div class="sec"><h3>Fechar mês</h3><div class="p"><p id="cmPrev"></p>
+      <div class="f"><input id="cmLabel" placeholder="Ex: Outubro 2026"></div>
+      <button class="btn q" id="cmBtn">Arquivar apostas resolvidas</button></div></div>
+  </section>
+
+  <nav class="nb">
+    <button class="ni on" data-tab="dia"><i>📅</i>Dia</button>
+    <button class="ni" data-tab="painel"><i>📊</i>Painel</button>
+    <button class="add" id="fab" aria-label="Nova aposta">+</button>
+    <button class="ni" data-tab="dias"><i>🗓️</i>Dias</button>
+    <button class="ni" data-tab="mais"><i>⚙️</i>Mais</button>
+  </nav>
 </div>
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true">
-  <h2 id="sheetTitle">Nova aposta</h2>
-  <div class="f"><label for="fAp">Aposta</label><input id="fAp" placeholder="Ex: Flamengo vence + mais de 1.5 gols" autocomplete="off"></div>
-  <div class="row">
-    <div class="f"><label for="fOdd">Odd</label><input id="fOdd" inputmode="decimal" placeholder="2.10"></div>
-    <div class="f"><label for="fStake">Valor (R$)</label><input id="fStake" inputmode="decimal" placeholder="50"></div>
+  <h2 id="sTitle">Nova aposta</h2>
+  <div class="f"><label for="fAp">Aposta</label><input id="fAp" placeholder="Ex: Chute Salah e Kluivert" autocomplete="off"></div>
+  <div class="g2">
+    <div class="f"><label for="fOdd">Odd</label><input id="fOdd" inputmode="decimal" placeholder="2.50"></div>
+    <div class="f"><label for="fStake">Stake (R$)</label><input id="fStake" inputmode="decimal" placeholder="50"></div>
   </div>
-  <div class="row">
-    <div class="f"><label for="fEsp">Esporte</label>
-      <select id="fEsp"><option>Futebol</option><option>Basquete</option><option>Tênis</option><option>MMA</option><option>Vôlei</option><option>E-sports</option><option>Outros</option></select></div>
-    <div class="f"><label for="fCasa">Casa</label><input id="fCasa" list="casas" placeholder="Bet365" autocomplete="off"><datalist id="casas"></datalist></div>
+  <div class="f"><label for="fCasa">Casa <button class="sm" id="toggleNova" type="button">+ nova</button></label>
+    <select id="fCasa"></select>
+    <div class="inl" id="novaBox" hidden style="margin-top:8px"><input id="fNova" placeholder="Nome da casa" autocomplete="off"><button class="btn" id="saveNova" type="button">Salvar</button></div></div>
+  <div class="g2">
+    <div class="f"><label for="fEsp">Esporte</label><select id="fEsp"><option>Futebol</option><option>Basquete</option><option>Tênis</option><option>MMA</option><option>Vôlei</option><option>E-sports</option><option>Outros</option></select></div>
+    <div class="f"><label for="fDat">Data</label><input type="date" id="fDat"></div>
   </div>
-  <div class="f"><label for="fDat">Data</label><input type="date" id="fDat"></div>
-  <button class="save" id="save">Salvar aposta</button>
-  <button class="del" id="del">Excluir aposta</button>
+  <div class="f"><label>Resultado</label>
+    <div class="seg" id="seg"><button type="button" data-r="PENDENTE">⏳ Pend</button><button type="button" data-r="GREEN">🟢 Green</button><button type="button" data-r="RED">🔴 Red</button><button type="button" data-r="VOID">⚪ Void</button></div></div>
+  <button class="btn" id="save">Salvar aposta</button>
+  <button class="btn d" id="del" hidden>Excluir aposta</button>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ─────────────────────────────────────────────────────────────
-// CONFIGURAÇÃO: cole aqui o firebaseConfig do seu painel SuperOdds
-// (é o mesmo objeto que está no HTML do painel). Com ele, o app usa
-// as mesmas apostas do painel. Deixe null para usar só neste celular.
-// ─────────────────────────────────────────────────────────────
-const FIREBASE_CONFIG = null;
-/* exemplo:
-const FIREBASE_CONFIG = {
-  apiKey: "...", authDomain: "...", projectId: "...",
-  storageBucket: "...", messagingSenderId: "...", appId: "..."
-};
-*/
+const FIREBASE_CONFIG={apiKey:"AIzaSyC3G9SfJ1BJSyakIttfR4N2lTm9c-IlfPk",authDomain:"dashboardapostas.firebaseapp.com",projectId:"dashboardapostas",storageBucket:"dashboardapostas.firebasestorage.app",messagingSenderId:"711928525206",appId:"1:711928525206:web:bb8d4d5ae23668b18e6db7"};
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth=firebase.auth(), db=firebase.firestore();
+try{db.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
 
-const EMOJI = {Futebol:'⚽',Basquete:'🏀','Tênis':'🎾',MMA:'🥊','Vôlei':'🏐','E-sports':'🎮',Outros:'🎲'};
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const iso = d => new Date(d.getTime() - d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
-const brl = v => (v<0?'-':'') + 'R$ ' + Math.abs(v).toFixed(2).replace('.',',');
-const num = s => parseFloat(String(s).replace('R$','').replace(',','.').trim());
+const DEFAULT_CASAS=['Bet365','SuperBet','Betano','Betfair','BetEsporte','ApostaGanha','SportingBet','UXBet','SeuBet','Betfast','LanceDeSorte','BetSul','CassinoBet','4Play','Faz1Bet','Novibet','ApostaTudo','VaiDeBet','BravoBet','ApostaDeOuro','McGames','KTO','EstrelaBet','Outras'];
+const EMOJI={Futebol:'⚽',Basquete:'🏀','Tênis':'🎾',MMA:'🥊','Vôlei':'🏐','E-sports':'🎮',Outros:'🎲'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const hoje=()=>ymd(new Date());
+const addDays=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return ymd(d)};
+const fmtR=v=>(v<0?'-':'')+'R$ '+Math.abs(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const pend=b=>!b.res||b.res==='PENDENTE';
+const luc=b=>pend(b)?null:b.res==='GREEN'?+((b.odd-1)*b.stake).toFixed(2):b.res==='RED'?-parseFloat(b.stake):0;
+const cls=v=>v>0?'pos':v<0?'neg':'';
+const sgn=v=>(v>0?'+':'')+fmtR(v);
+const num=s=>parseFloat(String(s).replace('R$','').replace(',','.').trim());
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2400)};
 
-let day = iso(new Date()), bets = [], unsub = null, store = null, editing = null;
+let uid=null,bets=[],casas=[...DEFAULT_CASAS],day=hoje(),tab='dia',editing=null,fres='PENDENTE',unsubs=[],cL,cM;
+const active=()=>bets.filter(b=>!b.arquivo);
+const betsCol=()=>db.collection('users').doc(uid).collection('bets');
+const casasDoc=()=>db.collection('users').doc(uid).collection('settings').doc('casas');
+const fbErr=e=>toast('⚠ '+(e.code||e.message));
 
-// ── armazenamento: Firestore (mesmas apostas do painel) ou local ──
-function localStore(){
-  const K='superodds_bets', all=()=>JSON.parse(localStorage.getItem(K)||'[]'), save=a=>localStorage.setItem(K,JSON.stringify(a));
-  let cb=null, d=null; const emit=()=>cb&&cb(all().filter(b=>b.dat===d));
-  return {
-    sub(dia,f){d=dia;cb=f;emit();return()=>{cb=null}},
-    add(b){const a=all();a.push({...b,id:Date.now().toString(36),createdAt:{seconds:Date.now()/1000}});save(a);emit()},
-    upd(id,p){save(all().map(b=>b.id===id?{...b,...p}:b));emit()},
-    del(id){save(all().filter(b=>b.id!==id));emit()}
-  };
-}
-function fbStore(uid){
-  const col = firebase.firestore().collection('users').doc(uid).collection('bets');
-  return {
-    sub:(dia,f)=>col.where('dat','==',dia).onSnapshot(s=>f(s.docs.map(x=>({id:x.id,...x.data()}))),e=>toast('Erro ao carregar: '+e.code)),
-    add:b=>col.add({...b,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>toast('Erro ao salvar: '+e.code)),
-    upd:(id,p)=>col.doc(id).update(p).catch(e=>toast('Erro ao salvar: '+e.code)),
-    del:id=>col.doc(id).delete().catch(e=>toast('Erro ao excluir: '+e.code))
-  };
+function stats(l){
+  const g=l.filter(b=>b.res==='GREEN'),r=l.filter(b=>b.res==='RED'),v=l.filter(b=>b.res==='VOID'),p=l.filter(pend);
+  const tl=l.reduce((s,b)=>s+(luc(b)||0),0),ts=l.reduce((s,b)=>s+parseFloat(b.stake||0),0);
+  return{g,r,v,p,tl,ts,ps:p.reduce((s,b)=>s+parseFloat(b.stake||0),0),roi:ts>0?tl/ts*100:0,ac:g.length+r.length>0?g.length/(g.length+r.length)*100:0,res:l.length-p.length};
 }
 
-// ── cálculo ──
-const ret = b => b.res==='GREEN' ? b.stake*(b.odd-1) : b.res==='RED' ? -b.stake : 0;
-
-function render(){
-  const g=bets.filter(b=>b.res==='GREEN'), r=bets.filter(b=>b.res==='RED'), v=bets.filter(b=>b.res==='VOID'), p=bets.filter(b=>b.res==='PENDENTE');
-  const total = bets.reduce((s,b)=>s+ret(b),0);
-  const invest = bets.filter(b=>b.res!=='VOID').reduce((s,b)=>s+(+b.stake||0),0);
-  const t=$('total'); t.textContent=(total>0?'+':'')+brl(total); t.className='sum-val num'+(total>0?' pos':total<0?' neg':'');
-  $('chips').innerHTML = bets.length
-    ? `<span class="chip">🟢 <b>${g.length}</b></span><span class="chip">🔴 <b>${r.length}</b></span><span class="chip">⚪ <b>${v.length}</b></span><span class="chip">⏳ <b>${p.length}</b></span><span class="chip">Apostado <b class="num">${brl(invest)}</b></span>`
-    : '';
-  const order = {PENDENTE:0,GREEN:1,RED:1,VOID:2};
-  const sorted = [...bets].sort((a,b)=>order[a.res]-order[b.res] || (a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
-  $('list').innerHTML = sorted.length ? sorted.map(b=>{
-    const x=ret(b), rt = b.res==='GREEN'||b.res==='RED' ? `<span class="ret num ${x>0?'pos':'neg'}">${x>0?'+':''}${brl(x)}</span>` : '';
-    return `<div class="card ${esc(b.res)}">
-      <div class="top"><span class="emo">${EMOJI[b.esp]||'🎲'}</span><div class="ap">${esc(b.ap)}</div><button class="more" data-edit="${esc(b.id)}" aria-label="Editar">⋯</button></div>
-      <div class="meta">${b.casa?`<span>${esc(b.casa)}</span>`:''}<span class="odd num">@${esc(b.odd)}</span><span class="num">${brl(+b.stake||0)}</span>${rt}</div>
-      <div class="btns">
-        <button class="rb g ${b.res==='GREEN'?'on':''}" data-res="GREEN" data-id="${esc(b.id)}">🟢 Green</button>
-        <button class="rb r ${b.res==='RED'?'on':''}" data-res="RED" data-id="${esc(b.id)}">🔴 Red</button>
-        <button class="rb v ${b.res==='VOID'?'on':''}" data-res="VOID" data-id="${esc(b.id)}">⚪ Void</button>
-      </div></div>`;
-  }).join('') : `<div class="empty">Nenhuma aposta neste dia.<br>Toque em “+ Nova aposta” para começar.</div>`;
-  const casas=[...new Set([...(JSON.parse(localStorage.getItem('so_casas')||'[]'))])];
-  $('casas').innerHTML = casas.map(c=>`<option value="${esc(c)}">`).join('');
+// ── DIA ──
+function rDia(){
+  const h=hoje(),dt=new Date(day+'T12:00:00');
+  $('dl').textContent=day===h?'Hoje':day===addDays(h,-1)?'Ontem':day===addDays(h,1)?'Amanhã':dt.toLocaleDateString('pt-BR',{weekday:'long'});
+  $('ds').textContent=dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const l=bets.filter(b=>b.dat===day),s=stats(l);
+  $('dban').className='banner'+(s.tl<0?' bneg':'');
+  $('dtot').textContent=sgn(s.tl);$('dtot').className='bv '+cls(s.tl);
+  $('dsub').textContent=l.length?`${l.length} aposta${l.length>1?'s':''} · apostado ${fmtR(s.ts)}${s.ts>0&&s.res?' · ROI '+s.roi.toFixed(1)+'%':''}`:'sem apostas neste dia';
+  $('dchips').innerHTML=l.length?`<span class="chip">🟢 <b>${s.g.length}</b></span><span class="chip">🔴 <b>${s.r.length}</b></span><span class="chip">⚪ <b>${s.v.length}</b></span><span class="chip">⏳ <b>${s.p.length}</b></span>`:'';
+  const outros=bets.filter(b=>pend(b)&&b.dat&&b.dat!==day).sort((a,b)=>a.dat.localeCompare(b.dat));
+  $('po').innerHTML=outros.length?`<button class="po" data-go="${outros[0].dat}">⏳ ${outros.length} pendente${outros.length>1?'s':''} em outros dias — ver</button>`:'';
+  const sorted=[...l].sort((a,b)=>(pend(b)-pend(a))||((a.createdAt?.seconds||0)-(b.createdAt?.seconds||0)));
+  $('list').innerHTML=sorted.length?sorted.map(b=>{
+    const x=luc(b);
+    return`<div class="card ${esc(b.res)}"><div class="top"><span class="emo">${EMOJI[b.esp]||'🎲'}</span><div class="ap">${esc(b.ap)}</div><button class="more" data-edit="${esc(b.id)}" aria-label="Editar">⋯</button></div>
+    <div class="meta">${b.casa?`<span class="tag">${esc(b.casa)}</span>`:''}<span class="odd mono">@${parseFloat(b.odd||0).toFixed(2)}</span><span class="mono">${fmtR(+b.stake||0)}</span>${x!==null&&b.res!=='VOID'?`<span class="ret mono ${cls(x)}">${sgn(x)}</span>`:''}</div>
+    <div class="btns"><button class="rb g ${b.res==='GREEN'?'on':''}" data-res="GREEN" data-id="${esc(b.id)}">🟢 Green</button><button class="rb r ${b.res==='RED'?'on':''}" data-res="RED" data-id="${esc(b.id)}">🔴 Red</button><button class="rb v ${b.res==='VOID'?'on':''}" data-res="VOID" data-id="${esc(b.id)}">⚪ Void</button></div></div>`;
+  }).join(''):`<div class="empty">Nenhuma aposta neste dia.<br>Toque no <b>+</b> para registrar.</div>`;
 }
 
-// ── dia ──
-function setDay(d){
-  day=d; const dt=new Date(d+'T12:00:00'), hoje=iso(new Date()), ontem=iso(new Date(Date.now()-864e5)), amanha=iso(new Date(Date.now()+864e5));
-  $('dl').textContent = d===hoje?'Hoje':d===ontem?'Ontem':d===amanha?'Amanhã':dt.toLocaleDateString('pt-BR',{weekday:'long'});
-  $('ds').textContent = dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-  if(unsub) unsub();
-  unsub = store.sub(day, list=>{bets=list;render()});
+// ── PAINEL ──
+function rPainel(){
+  const ab=active(),s=stats(ab);
+  $('pban').className='banner'+(s.tl<0?' bneg':'');
+  $('ptot').textContent=sgn(s.tl);$('ptot').className='bv '+cls(s.tl);
+  $('psub').textContent=`${ab.length} apostas · ROI ${s.roi.toFixed(1)}%${s.p.length?' · '+s.p.length+' pendentes':''}`;
+  const k=[['Apostado',fmtR(s.ts),'',''],['Apostas',ab.length,'b',s.res+' resolvidas'],['Green',s.g.length,'g',''],['Red',s.r.length,'r',''],['Void',s.v.length,'b',''],['Pendentes',s.p.length,'a',fmtR(s.ps)+' em risco'],['Acerto',s.ac.toFixed(1)+'%',s.ac>=50?'g':'r',''],['ROI',s.roi.toFixed(1)+'%',s.roi>=0?'g':'r','']];
+  $('kpis').innerHTML=k.map(([l,v,c,sub])=>`<div class="kpi ${c}"><div class="kl">${l}</div><div class="kv">${v}</div>${sub?`<div class="ks">${sub}</div>`:''}</div>`).join('');
+  const res=ab.filter(b=>!pend(b));let acc=0;const lv=res.map(b=>+(acc+=luc(b)||0).toFixed(2));
+  const lc=acc>=0?'#00f590':'#ff4d6a',tk={color:'#485070',font:{size:10,family:'JetBrains Mono'}};
+  if(window.Chart){
+    cL&&cL.destroy();
+    cL=new Chart($('cL'),{type:'line',data:{labels:res.map((_,i)=>i+1),datasets:[{data:lv,borderColor:lc,backgroundColor:lc+'18',fill:true,tension:.4,pointRadius:lv.length<25?3:0,pointBackgroundColor:lc,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{grid:{color:'#191d28'},border:{color:'#272d40'},ticks:{...tk,callback:v=>fmtR(v)}}}}});
+    const ano=new Date().getFullYear(),M=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    $('mt').textContent='Lucro por mês · '+ano;
+    const mv=M.map((_,i)=>+res.filter(b=>{const d=new Date(b.dat+'T12:00:00');return d.getFullYear()===ano&&d.getMonth()===i}).reduce((a,b)=>a+(luc(b)||0),0).toFixed(2));
+    cM&&cM.destroy();
+    cM=new Chart($('cM'),{type:'bar',data:{labels:M,datasets:[{data:mv,backgroundColor:mv.map(v=>v>0?'#00d97ebb':v<0?'#ff4d6abb':'#272d40'),borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtR(c.parsed.y)}}},scales:{x:{grid:{display:false},ticks:{color:'#909bbf',font:{size:10}}},y:{grid:{color:'#191d28'},border:{color:'#272d40'},ticks:{...tk,callback:v=>fmtR(v)},beginAtZero:true}}}});
+  }
+  const grp=key=>{const m={};ab.forEach(b=>{const c=b[key]||'?';m[c]=m[c]||{n:0,l:0};m[c].n++;m[c].l+=luc(b)||0});return Object.entries(m).sort((a,b)=>b[1].l-a[1].l)};
+  const rows=a=>a.length?a.map(([n,d])=>`<div class="row"><span class="n">${esc(n)}</span><span class="c">${d.n} ap.</span><span class="v ${cls(d.l)}">${sgn(d.l)}</span></div>`).join(''):'<div class="empty">Sem dados</div>';
+  $('pcasa').innerHTML=rows(grp('casa').slice(0,10));$('pesp').innerHTML=rows(grp('esp'));
 }
-const shift = n => { const d=new Date(day+'T12:00:00'); d.setDate(d.getDate()+n); setDay(iso(d)); };
-$('prev').onclick=()=>shift(-1); $('next').onclick=()=>shift(1);
-$('day').onclick=()=>{ $('dpick').value=day; ($('dpick').showPicker?$('dpick').showPicker():$('dpick').click()); };
+
+// ── DIAS ──
+function rDias(){
+  const g={};bets.forEach(b=>{if(b.dat)(g[b.dat]=g[b.dat]||[]).push(b)});
+  const ds=Object.keys(g).sort((a,b)=>b.localeCompare(a));
+  $('dias').innerHTML=ds.length?ds.map(d=>{
+    const s=stats(g[d]),lb=new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+    return`<div class="card drow" data-go="${d}"><div class="top"><div class="ap" style="text-transform:capitalize">${lb}</div><span class="mono ${cls(s.tl)}" style="font-weight:700">${s.res?sgn(s.tl):'—'}</span></div>
+    <div class="meta" style="margin:6px 0 0"><span>🟢 ${s.g.length}</span><span>🔴 ${s.r.length}</span><span>⚪ ${s.v.length}</span>${s.p.length?`<span class="amb">⏳ ${s.p.length}</span>`:''}<span class="mono" style="margin-left:auto">${fmtR(s.ts)}</span></div></div>`;
+  }).join(''):'<div class="empty">Nenhuma aposta registrada ainda.</div>';
+}
+
+// ── MAIS ──
+function rMais(){
+  $('cm').innerHTML=casas.map((c,i)=>`<div class="row"><span class="n">${esc(c)}</span><button class="more" data-delcasa="${i}" aria-label="Remover">✕</button></div>`).join('');
+  const r=active().filter(b=>!pend(b));
+  $('cmPrev').textContent=r.length?`${r.length} apostas resolvidas serão arquivadas · lucro do período: ${fmtR(r.reduce((s,b)=>s+(luc(b)||0),0))}`:'Nenhuma aposta resolvida para arquivar.';
+  if(!$('cmLabel').value){const M=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],n=new Date();$('cmLabel').value=M[n.getMonth()]+' '+n.getFullYear()}
+}
+function render(){({dia:rDia,painel:rPainel,dias:rDias,mais:rMais})[tab]();buildCasas()}
+function buildCasas(sel){
+  const cur=sel??$('fCasa').value;
+  $('fCasa').innerHTML='<option value="">Selecionar...</option>'+casas.map(c=>`<option>${esc(c)}</option>`).join('');
+  $('fCasa').value=cur;
+}
+
+function goTab(t){
+  tab=t;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
+  scrollTo(0,0);render();
+}
+function setDay(d){day=d;if(tab!=='dia')goTab('dia');else render()}
+
+// ── ações ──
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tab],[data-d],[data-res],[data-edit],[data-go],[data-delcasa],#seg [data-r]');
+  if(!t)return;
+  const D=t.dataset;
+  if(D.tab)goTab(D.tab);
+  else if(D.d)setDay(addDays(day,+D.d));
+  else if(D.go)setDay(D.go);
+  else if(D.res){const b=bets.find(x=>x.id===D.id);betsCol().doc(b.id).update({res:b.res===D.res?'PENDENTE':D.res}).catch(fbErr);navigator.vibrate&&navigator.vibrate(15)}
+  else if(D.edit)openSheet(bets.find(x=>x.id===D.edit));
+  else if(D.delcasa!==undefined){const c=casas[+D.delcasa];if(confirm('Remover "'+c+'" da lista de casas?\nAs apostas já registradas não mudam.')){saveCasas(casas.filter((_,i)=>i!==+D.delcasa));toast('Casa removida')}}
+  else if(D.r)setRes(D.r);
+});
+$('day').onclick=()=>{$('dpick').value=day;$('dpick').showPicker?$('dpick').showPicker():$('dpick').click()};
 $('dpick').onchange=e=>e.target.value&&setDay(e.target.value);
 
-// ── resolver (toque de novo no mesmo botão volta para pendente) ──
-$('list').onclick=e=>{
-  const rb=e.target.closest('[data-res]'), ed=e.target.closest('[data-edit]');
-  if(rb){ const b=bets.find(x=>x.id===rb.dataset.id); store.upd(b.id,{res:b.res===rb.dataset.res?'PENDENTE':rb.dataset.res}); navigator.vibrate&&navigator.vibrate(15); }
-  if(ed){ openSheet(bets.find(x=>x.id===ed.dataset.edit)); }
-};
-
-// ── formulário ──
+function setRes(r){fres=r;document.querySelectorAll('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r))}
 function openSheet(b){
   editing=b||null;
-  $('sheetTitle').textContent=b?'Editar aposta':'Nova aposta';
-  $('fAp').value=b?b.ap:''; $('fOdd').value=b?b.odd:''; $('fStake').value=b?b.stake:'';
-  $('fEsp').value=b?b.esp:'Futebol'; $('fCasa').value=b?b.casa:(localStorage.getItem('so_ultima_casa')||''); $('fDat').value=b?b.dat:day;
-  $('del').style.display=b?'block':'none'; $('save').textContent=b?'Salvar alterações':'Salvar aposta';
-  $('scrim').classList.add('open'); $('sheet').classList.add('open');
-  if(!b) setTimeout(()=>$('fAp').focus(),250);
+  $('sTitle').textContent=b?'Editar aposta':'Nova aposta';
+  $('fAp').value=b?b.ap:'';$('fOdd').value=b?b.odd:'';$('fStake').value=b?b.stake:'';
+  buildCasas(b?b.casa:(localStorage.getItem('so_casa')||''));
+  $('fEsp').value=b?b.esp:(localStorage.getItem('so_esp')||'Futebol');
+  $('fDat').value=b?b.dat:day;setRes(b?(b.res||'PENDENTE'):'PENDENTE');
+  $('del').hidden=!b;$('save').textContent=b?'Salvar alterações':'Salvar aposta';$('novaBox').hidden=true;
+  $('scrim').classList.add('open');$('sheet').classList.add('open');
+  if(!b)setTimeout(()=>$('fAp').focus(),250);
 }
-function closeSheet(){ $('scrim').classList.remove('open'); $('sheet').classList.remove('open'); }
-$('fab').onclick=()=>openSheet(); $('scrim').onclick=closeSheet;
-$('save').onclick=()=>{
-  const ap=$('fAp').value.trim(), odd=num($('fOdd').value), stake=num($('fStake').value);
-  if(!ap) return toast('Descreva a aposta');
-  if(!(odd>1)) return toast('Odd inválida (ex: 2.10)');
-  if(!(stake>0)) return toast('Informe o valor apostado');
-  const casa=$('fCasa').value.trim(), data={ap,odd,stake,esp:$('fEsp').value,casa,dat:$('fDat').value||day};
-  if(casa){ const c=JSON.parse(localStorage.getItem('so_casas')||'[]'); if(!c.includes(casa)) c.push(casa); localStorage.setItem('so_casas',JSON.stringify(c)); localStorage.setItem('so_ultima_casa',casa); }
-  if(editing) store.upd(editing.id,data); else store.add({...data,res:'PENDENTE'});
-  closeSheet(); toast(editing?'Alterações salvas':'Aposta salva');
-  if(data.dat!==day) setDay(data.dat);
+const closeSheet=()=>{$('scrim').classList.remove('open');$('sheet').classList.remove('open')};
+$('fab').onclick=()=>openSheet();$('scrim').onclick=closeSheet;
+$('toggleNova').onclick=()=>{$('novaBox').hidden=!$('novaBox').hidden;if(!$('novaBox').hidden)$('fNova').focus()};
+$('saveNova').onclick=()=>{const n=$('fNova').value.trim();if(!n)return;if(!casas.includes(n))saveCasas([...casas,n]);buildCasas(n);$('fNova').value='';$('novaBox').hidden=true};
+$('save').onclick=async()=>{
+  const ap=$('fAp').value.trim(),odd=num($('fOdd').value),stake=num($('fStake').value),casa=$('fCasa').value,dat=$('fDat').value;
+  if(!dat||!casa||!ap||isNaN(odd)||isNaN(stake)||stake<=0)return toast('⚠ Preencha aposta, odd, stake e casa');
+  if(!(odd>1))return toast('⚠ Odd precisa ser maior que 1');
+  const data={dat,esp:$('fEsp').value||'Outros',casa,ap,odd,stake,res:fres};
+  localStorage.setItem('so_casa',casa);localStorage.setItem('so_esp',data.esp);
+  $('save').disabled=true;
+  try{
+    if(editing)await betsCol().doc(editing.id).update(data);
+    else await betsCol().add({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast(editing?'✓ Alterações salvas':'✓ Aposta salva');closeSheet();
+    if(dat!==day&&tab==='dia')setDay(dat);
+  }catch(err){fbErr(err)}finally{$('save').disabled=false}
 };
-$('del').onclick=()=>{ if(editing && confirm('Excluir esta aposta?')){ store.del(editing.id); closeSheet(); toast('Aposta excluída'); } };
+$('del').onclick=async()=>{if(editing&&confirm('Excluir esta aposta?')){try{await betsCol().doc(editing.id).delete();closeSheet();toast('Aposta excluída')}catch(e){fbErr(e)}}};
 
-function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('show'),2200); }
+async function saveCasas(l){casas=l;buildCasas();if(tab==='mais')rMais();try{await casasDoc().set({list:l})}catch(e){fbErr(e)}}
+$('addCasaBtn').onclick=()=>{const n=$('newCasa').value.trim();if(n&&!casas.includes(n)){saveCasas([...casas,n]);toast('Casa adicionada')}$('newCasa').value=''};
+$('cmBtn').onclick=async()=>{
+  const label=$('cmLabel').value.trim(),r=active().filter(b=>!pend(b));
+  if(!label)return toast('⚠ Dê um nome ao arquivo');
+  if(!r.length)return toast('Nada para arquivar');
+  if(!confirm(`Arquivar ${r.length} apostas resolvidas em "${label}"?\nElas saem do Painel (continuam no Resumo diário).`))return;
+  try{for(let i=0;i<r.length;i+=400){const bt=db.batch();r.slice(i,i+400).forEach(b=>bt.update(betsCol().doc(b.id),{arquivo:label}));await bt.commit()}
+    $('cmLabel').value='';toast('✓ '+r.length+' apostas arquivadas');}catch(e){fbErr(e)}
+};
 
-// ── iniciar ──
-function start(s){ store=s; $('login').style.display='none'; $('app').style.display='block'; setDay(day); }
-
-if(FIREBASE_CONFIG){
-  const load = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
-  const V='https://www.gstatic.com/firebasejs/10.12.2/';
-  Promise.all([load(V+'firebase-app-compat.js')])
-    .then(()=>Promise.all([load(V+'firebase-auth-compat.js'),load(V+'firebase-firestore-compat.js')]))
-    .then(()=>{
-      firebase.initializeApp(FIREBASE_CONFIG);
-      try{ firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
-      const auth=firebase.auth();
-      $('loginBtn').onclick=()=>{
-        const p=new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p));
-      };
-      auth.onAuthStateChanged(u=>{
-        if(u) start(fbStore(u.uid));
-        else { $('app').style.display='none'; $('login').style.display='block'; }
-      });
-    })
-    .catch(()=>{ toast('Sem internet: usando dados deste celular'); start(localStore()); });
-} else {
-  start(localStore());
+// ── login / dados ──
+function listen(){
+  unsubs.forEach(u=>u());
+  unsubs=[
+    betsCol().orderBy('dat','asc').onSnapshot(s=>{bets=s.docs.map(d=>({...d.data(),id:d.id}));render()},e=>fbErr(e)),
+    casasDoc().onSnapshot(s=>{if(s.exists)casas=s.data().list||[...DEFAULT_CASAS];else casasDoc().set({list:casas}).catch(()=>{});render()},()=>{})
+  ];
 }
+$('loginBtn').onclick=()=>{const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p))};
+$('logout').onclick=()=>{if(confirm('Sair da conta?'))auth.signOut()};
+auth.onAuthStateChanged(u=>{
+  if(u){uid=u.uid;$('who').textContent=u.email||u.displayName||'';$('login').hidden=true;$('app').hidden=false;listen()}
+  else{unsubs.forEach(x=>x());unsubs=[];bets=[];$('app').hidden=true;$('login').hidden=false}
+});
 
 // ── instalar / service worker ──
 let ip=null;
-addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); ip=e; $('install').style.display='block'; });
-$('install').onclick=async()=>{ if(!ip) return; ip.prompt(); await ip.userChoice; ip=null; $('install').style.display='none'; };
-addEventListener('appinstalled',()=>{ $('install').style.display='none'; });
-if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;$('install').hidden=false});
+$('install').onclick=async()=>{if(!ip)return;ip.prompt();await ip.userChoice;ip=null;$('install').hidden=true};
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
 </script>
 </body>
 </html>
